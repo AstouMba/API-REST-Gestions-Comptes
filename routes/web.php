@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use SwaggerLume\Http\Controllers\SwaggerLumeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +17,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/docs', [SwaggerLumeController::class, 'docs'])->name('swagger-lume.docs');
+Route::get('/api/documentation', [SwaggerLumeController::class, 'api'])->name('swagger-lume.api');
