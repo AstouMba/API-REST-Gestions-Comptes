@@ -14,6 +14,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+/**
+ * @group Authentication
+ */
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+/**
+ * @group Admin
+ */
+Route::middleware(['admin'])->post('/admin/clients', [App\Http\Controllers\AdminController::class, 'store']);
+
+Route::prefix('v1')->group(function () {
+    /**
+     * @group Comptes
+     */
+    Route::get('comptes', [App\Http\Controllers\CompteController::class, 'index']);
 });
