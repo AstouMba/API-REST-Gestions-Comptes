@@ -28,7 +28,7 @@ return [
     ],
 
     'paths' => [
-        'use_absolute_path' => false,
+        'use_absolute_path' => true,
         'docs_json' => 'api-docs.json',
         'docs_yaml' => 'api-docs.yaml',
         'annotations' => base_path('app'),
