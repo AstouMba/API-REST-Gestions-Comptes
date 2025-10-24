@@ -37,6 +37,10 @@ return [
                 // Base de ton API (très important pour Swagger UI)
                 'base' => env('APP_URL', 'https://api-rest-gestions-comptes.onrender.com'),
             ],
+
+            'swagger-ui' => [
+                'url' => env('APP_URL') . '/docs/asset/',
+            ],
         ],
     ],
 
