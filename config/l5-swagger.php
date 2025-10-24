@@ -15,7 +15,7 @@ return [
             ],
 
             'paths' => [
-                'docs' => storage_path('api-docs/api-docs.json'), // dossier où se trouve le JSON
+                'docs' => storage_path('api-docs'), // dossier où se trouve le JSON
                 'docs_json' => 'api-docs.json',
                 'docs_yaml' => 'api-docs.yaml',
                 'format_to_use_for_docs' => 'json',
