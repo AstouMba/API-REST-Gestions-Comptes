@@ -41,6 +41,9 @@ $app->singleton(
     App\Exceptions\Handler::class
 );
 
+// Bind the ResponseFactory to Laravel's implementation to fix the view method issue
+$app->bind('Illuminate\Contracts\Routing\ResponseFactory', 'Illuminate\Routing\ResponseFactory');
+
 /*
 |--------------------------------------------------------------------------
 | Return The Application

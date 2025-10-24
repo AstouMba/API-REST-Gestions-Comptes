@@ -1,7 +1,6 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-use SwaggerLume\Http\Controllers\SwaggerLumeController;
+use App\Http\Controllers\SwaggerController;;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,10 +12,12 @@ use SwaggerLume\Http\Controllers\SwaggerLumeController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/', fn () => view('welcome'));
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Swagger UI
+Route::get('/api/documentation', [SwaggerController::class, 'api'])
+    ->name('l5-swagger.api');
 
-Route::get('/docs', [SwaggerLumeController::class, 'docs'])->name('swagger-lume.docs');
-Route::get('/api/documentation', [SwaggerLumeController::class, 'api'])->name('swagger-lume.api');
+// Fichier JSON Swagger
+Route::get('/docs/json', [SwaggerController::class, 'docs'])
+    ->name('l5-swagger.docs');
