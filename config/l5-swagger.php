@@ -36,6 +36,8 @@ return [
         'base' => '/api/v1',
         'views' => base_path('resources/views/vendor/l5-swagger'),
     ],
+    'secure' => true, 
+
 
     'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
     'swagger_version' => env('L5_SWAGGER_VERSION', '3.0'),

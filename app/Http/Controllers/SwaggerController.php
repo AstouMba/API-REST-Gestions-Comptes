@@ -11,9 +11,6 @@ use L5Swagger\GeneratorFactory;
 
 class SwaggerController extends Controller
 {
-    /**
-     * @var GeneratorFactory
-     */
     protected $generatorFactory;
 
     public function __construct(GeneratorFactory $generatorFactory)
@@ -22,31 +19,25 @@ class SwaggerController extends Controller
     }
 
     /**
-     * Serve the JSON documentation file.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     * @throws FileNotFoundException
+     * Sert le fichier JSON de documentation.
      */
     public function docs(Request $request)
     {
         $fileSystem = new Filesystem();
-        $filePath = storage_path('api-docs/api-docs.json'); // JSON endpoint
+        $filePath = storage_path('api-docs/api-docs.json');
 
-        // Génération automatique si nécessaire
         if (config('l5-swagger.generate_always')) {
             $generator = $this->generatorFactory->make('default');
-
             try {
                 $generator->generateDocs();
             } catch (\Exception $e) {
                 Log::error($e);
-                abort(500, "Impossible de générer la documentation Swagger: " . $e->getMessage());
+                abort(500, "Impossible de générer la documentation Swagger : " . $e->getMessage());
             }
         }
 
         if (! $fileSystem->exists($filePath)) {
-            abort(404, "Impossible de localiser le fichier de documentation: $filePath");
+            abort(404, "Impossible de localiser le fichier de documentation : $filePath");
         }
 
         $content = $fileSystem->get($filePath);
@@ -56,19 +47,18 @@ class SwaggerController extends Controller
     }
 
     /**
-     * Display Swagger UI page.
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * Affiche la page Swagger UI.
      */
     public function api(Request $request)
     {
         $documentation = 'default';
-        $urlToDocs = route('l5-swagger.docs'); // /docs/json
+
+        // ✅ Force le HTTPS absolu même sur Render
+        $urlToDocs = route('l5-swagger.docs', [], true);
 
         return view('l5-swagger::index', [
             'documentation' => $documentation,
-            'secure' => $request->secure(),
+            'secure' => true, 
             'urlToDocs' => $urlToDocs,
             'operationsSorter' => config('l5-swagger.operations_sort'),
             'configUrl' => config('l5-swagger.additional_config_url') ?? null,
@@ -78,11 +68,7 @@ class SwaggerController extends Controller
     }
 
     /**
-     * Display OAuth2 callback pages.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     * @throws FileNotFoundException
+     * Page de redirection OAuth2 (Swagger).
      */
     public function oauth2Callback(Request $request)
     {
@@ -91,7 +77,7 @@ class SwaggerController extends Controller
         $filePath = swagger_ui_dist_path($documentation, 'oauth2-redirect.html');
 
         if (! $fileSystem->exists($filePath)) {
-            abort(404, "Fichier oauth2-redirect introuvable: $filePath");
+            abort(404, "Fichier oauth2-redirect introuvable : $filePath");
         }
 
         return response($fileSystem->get($filePath), 200)
