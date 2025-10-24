@@ -1,48 +1,104 @@
 <?php
 
 return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Documentation generation
+    |--------------------------------------------------------------------------
+    */
     'default' => 'default',
 
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'API Gestion Comptes',
+                /*
+                 |--------------------------------------------------------------------------
+                 | Path where to store generated documentation
+                 |--------------------------------------------------------------------------
+                 */
+                'output' => storage_path('api-docs'),
+
+                /*
+                 |--------------------------------------------------------------------------
+                 | Base URL (important for Render HTTPS)
+                 |--------------------------------------------------------------------------
+                 */
+                'host' => env('APP_URL', 'https://api-rest-gestions-comptes.onrender.com'),
+                'basePath' => null,
+                'schemes' => ['https'],
+
+                'consumes' => [
+                    'application/json',
+                ],
+                'produces' => [
+                    'application/json',
+                ],
             ],
 
             'routes' => [
-                'api'  => 'api/documentation',
-                'docs' => 'docs/json',
+                /*
+                 |--------------------------------------------------------------------------
+                 | Route for accessing documentation interface
+                 |--------------------------------------------------------------------------
+                 */
+                'api' => 'api/documentation',
+
+                /*
+                 |--------------------------------------------------------------------------
+                 | Middleware for documentation route
+                 |--------------------------------------------------------------------------
+                 */
+                'middleware' => [
+                    'api',
+                ],
             ],
 
             'paths' => [
+                /*
+                 |--------------------------------------------------------------------------
+                 | Absolute path for assets and json docs
+                 |--------------------------------------------------------------------------
+                 */
+                'use_absolute_path' => true,
+
                 'docs' => storage_path('api-docs'),
-                'docs_json' => 'api-docs.json',
-                'docs_yaml' => 'api-docs.yaml',
-                'format_to_use_for_docs' => 'json',
                 'annotations' => [
                     base_path('app'),
                 ],
+                'views' => base_path('resources/views/vendor/l5-swagger'),
+                'base' => env('L5_SWAGGER_CONST_HOST', 'https://api-rest-gestions-comptes.onrender.com/docs/json'),
+                'excludes' => [],
             ],
         ],
     ],
 
-    // ✅ Configuration pour Render (HTTPS)
-    'paths' => [
-        'use_absolute_path' => false,
-        'docs_json' => 'api-docs.json',
-        'docs_yaml' => 'api-docs.yaml',
-        'annotations' => base_path('app'),
-        'excludes' => [],
-        'base' => '/api/v1',
-        'views' => base_path('resources/views/vendor/l5-swagger'),
+    /*
+    |--------------------------------------------------------------------------
+    | Default API version
+    |--------------------------------------------------------------------------
+    */
+    'default_api_version' => 'v1',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Documentation UI settings
+    |--------------------------------------------------------------------------
+    */
+    'defaults' => [
+        'routes' => [
+            'api' => 'api/documentation',
+        ],
     ],
 
-    // ✅ Force HTTPS derrière proxy Render
-    'proxy' => true,
-    'secure' => true,
-
-    'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
-    'swagger_version' => env('L5_SWAGGER_VERSION', '3.0'),
-    'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', null),
-    'validator_url' => null,
+    /*
+    |--------------------------------------------------------------------------
+    | Swagger UI Config
+    |--------------------------------------------------------------------------
+    */
+    'swagger_ui' => [
+        'displayRequestDuration' => true,
+        'filter' => true,
+        'docExpansion' => 'none',
+    ],
 ];
