@@ -64,7 +64,7 @@ class SwaggerController extends Controller
             'configUrl' => config('l5-swagger.additional_config_url') ?? null,
             'validatorUrl' => config('l5-swagger.validator_url'),
             'useAbsolutePath' => config('l5-swagger.documentations.default.paths.use_absolute_path', true),
-        ]);
+        ]); 
     }
 
     /**
