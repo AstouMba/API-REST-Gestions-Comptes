@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "09ee8df2a3d3add0f9473e66e0cf8c9e",
+    "content-hash": "7773353b4c71f8efb580e2c04215c7fd",
     "packages": [
         {
             "name": "brick/math",
@@ -136,39 +136,51 @@
             "time": "2023-12-11T17:09:12+00:00"
         },
         {
-            "name": "darkaonline/swagger-lume",
-            "version": "11.0",
+            "name": "darkaonline/l5-swagger",
+            "version": "8.6.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/DarkaOnLine/SwaggerLume.git",
-                "reference": "2497480db7f085ba10d08a8fbb0a715dbbee1378"
+                "url": "https://github.com/DarkaOnLine/L5-Swagger.git",
+                "reference": "4cf2b3faae9e9cffd05e4eb6e066741bf56f0a85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DarkaOnLine/SwaggerLume/zipball/2497480db7f085ba10d08a8fbb0a715dbbee1378",
-                "reference": "2497480db7f085ba10d08a8fbb0a715dbbee1378",
+                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/4cf2b3faae9e9cffd05e4eb6e066741bf56f0a85",
+                "reference": "4cf2b3faae9e9cffd05e4eb6e066741bf56f0a85",
                 "shasum": ""
             },
             "require": {
                 "doctrine/annotations": "^1.0 || ^2.0",
-                "laravel/lumen-framework": "~6.0 || ~7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0",
-                "php": ">=7.2 || ^8.0",
-                "swagger-api/swagger-ui": "^3.0 || ^4.0",
-                "symfony/yaml": "^4.0 || ^5.0 || ^6.2",
-                "zircote/swagger-php": "~2.0 || 3.* || 4.*"
+                "ext-json": "*",
+                "laravel/framework": "^11.0 || ^10.0 || ^9.0 || >=8.40.0 || ^7.0",
+                "php": "^7.2 || ^8.0",
+                "swagger-api/swagger-ui": "^3.0 || >=4.1.3",
+                "symfony/yaml": "^5.0 || ^6.0 || ^7.0",
+                "zircote/swagger-php": "^3.2.0 || ^4.0.0"
             },
             "require-dev": {
                 "mockery/mockery": "1.*",
+                "orchestra/testbench": "^9.0 || ^8.0 || 7.* || ^6.15 || 5.*",
                 "php-coveralls/php-coveralls": "^2.0",
-                "phpunit/phpunit": "^10.0 || ^9.5"
+                "phpunit/phpunit": "^11.0 || ^10.0 || ^9.5"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "L5Swagger": "L5Swagger\\L5SwaggerFacade"
+                    },
+                    "providers": [
+                        "L5Swagger\\L5SwaggerServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
                 "files": [
                     "src/helpers.php"
                 ],
                 "psr-4": {
-                    "SwaggerLume\\": "src"
+                    "L5Swagger\\": "src"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -181,20 +193,19 @@
                     "email": "darius@matulionis.lt"
                 }
             ],
-            "description": "OpenApi or Swagger integration to Lumen",
+            "description": "OpenApi or Swagger integration to Laravel",
             "keywords": [
                 "api",
                 "documentation",
                 "laravel",
-                "lumen",
                 "openapi",
                 "specification",
                 "swagger",
                 "ui"
             ],
             "support": {
-                "issues": "https://github.com/DarkaOnLine/SwaggerLume/issues",
-                "source": "https://github.com/DarkaOnLine/SwaggerLume/tree/11.0"
+                "issues": "https://github.com/DarkaOnLine/L5-Swagger/issues",
+                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/8.6.5"
             },
             "funding": [
                 {
@@ -202,7 +213,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-05-15T06:15:35+00:00"
+            "time": "2025-02-06T14:54:32+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -1408,104 +1419,6 @@
             "time": "2025-09-30T14:56:54+00:00"
         },
         {
-            "name": "laravel/lumen-framework",
-            "version": "v10.0.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/laravel/lumen-framework.git",
-                "reference": "c88d8cb1cbaf578c5261b4f9c8e1f070eaff1496"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/laravel/lumen-framework/zipball/c88d8cb1cbaf578c5261b4f9c8e1f070eaff1496",
-                "reference": "c88d8cb1cbaf578c5261b4f9c8e1f070eaff1496",
-                "shasum": ""
-            },
-            "require": {
-                "composer-runtime-api": "^2.2",
-                "dragonmantank/cron-expression": "^3.1",
-                "illuminate/auth": "^10.0",
-                "illuminate/broadcasting": "^10.0",
-                "illuminate/bus": "^10.0",
-                "illuminate/cache": "^10.0",
-                "illuminate/collections": "^10.0",
-                "illuminate/config": "^10.0",
-                "illuminate/console": "^10.0",
-                "illuminate/container": "^10.0",
-                "illuminate/contracts": "^10.0",
-                "illuminate/database": "^10.0",
-                "illuminate/encryption": "^10.0",
-                "illuminate/events": "^10.0",
-                "illuminate/filesystem": "^10.0",
-                "illuminate/hashing": "^10.0",
-                "illuminate/http": "^10.0",
-                "illuminate/log": "^10.0",
-                "illuminate/macroable": "^10.0",
-                "illuminate/pagination": "^10.0",
-                "illuminate/pipeline": "^10.0",
-                "illuminate/queue": "^10.0",
-                "illuminate/support": "^10.0",
-                "illuminate/testing": "^10.0",
-                "illuminate/translation": "^10.0",
-                "illuminate/validation": "^10.0",
-                "illuminate/view": "^10.0",
-                "nikic/fast-route": "^1.3",
-                "php": "^8.1",
-                "symfony/console": "^6.1",
-                "symfony/error-handler": "^6.1",
-                "symfony/http-foundation": "^6.1",
-                "symfony/http-kernel": "^6.1",
-                "symfony/mime": "^6.1",
-                "symfony/var-dumper": "^6.1",
-                "vlucas/phpdotenv": "^5.4.1"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.4.4",
-                "phpunit/phpunit": "10.5.3"
-            },
-            "suggest": {
-                "laravel/tinker": "Required to use the tinker console command (^2.7).",
-                "nyholm/psr7": "Required to use PSR-7 bridging features (^1.2).",
-                "symfony/psr-http-message-bridge": "Required to use PSR-7 bridging features (^2.0)."
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "10.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/helpers.php"
-                ],
-                "psr-4": {
-                    "Laravel\\Lumen\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Taylor Otwell",
-                    "email": "taylor@laravel.com"
-                }
-            ],
-            "description": "The Laravel Lumen Framework.",
-            "homepage": "https://lumen.laravel.com",
-            "keywords": [
-                "framework",
-                "laravel",
-                "lumen"
-            ],
-            "support": {
-                "issues": "https://github.com/laravel/lumen-framework/issues",
-                "source": "https://github.com/laravel/lumen-framework"
-            },
-            "time": "2024-11-26T15:27:51+00:00"
-        },
-        {
             "name": "laravel/prompts",
             "version": "v0.1.25",
             "source": {
@@ -2495,56 +2408,6 @@
             "time": "2025-08-06T21:43:34+00:00"
         },
         {
-            "name": "nikic/fast-route",
-            "version": "v1.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nikic/FastRoute.git",
-                "reference": "181d480e08d9476e61381e04a71b34dc0432e812"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nikic/FastRoute/zipball/181d480e08d9476e61381e04a71b34dc0432e812",
-                "reference": "181d480e08d9476e61381e04a71b34dc0432e812",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8.35|~5.7"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/functions.php"
-                ],
-                "psr-4": {
-                    "FastRoute\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Nikita Popov",
-                    "email": "nikic@php.net"
-                }
-            ],
-            "description": "Fast request router for PHP",
-            "keywords": [
-                "router",
-                "routing"
-            ],
-            "support": {
-                "issues": "https://github.com/nikic/FastRoute/issues",
-                "source": "https://github.com/nikic/FastRoute/tree/master"
-            },
-            "time": "2018-02-13T20:26:39+00:00"
-        },
-        {
             "name": "nikic/php-parser",
             "version": "v5.6.2",
             "source": {
@@ -3503,16 +3366,16 @@
         },
         {
             "name": "swagger-api/swagger-ui",
-            "version": "v4.19.1",
+            "version": "v5.29.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swagger-api/swagger-ui.git",
-                "reference": "92ffd76d15671954c239fdefb43d1951e06f8bb5"
+                "reference": "04b9ad7b37f02bce0e1cb8c521e40b68585ccf9f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/92ffd76d15671954c239fdefb43d1951e06f8bb5",
-                "reference": "92ffd76d15671954c239fdefb43d1951e06f8bb5",
+                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/04b9ad7b37f02bce0e1cb8c521e40b68585ccf9f",
+                "reference": "04b9ad7b37f02bce0e1cb8c521e40b68585ccf9f",
                 "shasum": ""
             },
             "type": "library",
@@ -3558,9 +3421,9 @@
             ],
             "support": {
                 "issues": "https://github.com/swagger-api/swagger-ui/issues",
-                "source": "https://github.com/swagger-api/swagger-ui/tree/v4.19.1"
+                "source": "https://github.com/swagger-api/swagger-ui/tree/v5.29.5"
             },
-            "time": "2023-06-12T16:31:43+00:00"
+            "time": "2025-10-17T13:13:13+00:00"
         },
         {
             "name": "symfony/console",
@@ -5810,28 +5673,28 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v6.4.26",
+            "version": "v7.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "0fc8b966fd0dcaab544ae59bfc3a433f048c17b0"
+                "reference": "d4f4a66866fe2451f61296924767280ab5732d9d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/0fc8b966fd0dcaab544ae59bfc3a433f048c17b0",
-                "reference": "0fc8b966fd0dcaab544ae59bfc3a433f048c17b0",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/d4f4a66866fe2451f61296924767280ab5732d9d",
+                "reference": "d4f4a66866fe2451f61296924767280ab5732d9d",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.1",
-                "symfony/deprecation-contracts": "^2.5|^3",
+                "php": ">=8.2",
+                "symfony/deprecation-contracts": "^2.5|^3.0",
                 "symfony/polyfill-ctype": "^1.8"
             },
             "conflict": {
-                "symfony/console": "<5.4"
+                "symfony/console": "<6.4"
             },
             "require-dev": {
-                "symfony/console": "^5.4|^6.0|^7.0"
+                "symfony/console": "^6.4|^7.0"
             },
             "bin": [
                 "Resources/bin/yaml-lint"
@@ -5862,7 +5725,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v6.4.26"
+                "source": "https://github.com/symfony/yaml/tree/v7.3.3"
             },
             "funding": [
                 {
@@ -5882,7 +5745,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-09-26T15:07:38+00:00"
+            "time": "2025-08-27T11:34:33+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

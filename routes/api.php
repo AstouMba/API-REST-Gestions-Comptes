@@ -28,7 +28,11 @@ Route::middleware(['admin'])->post('/admin/clients', [App\Http\Controllers\Admin
 
 Route::prefix('v1')->group(function () {
     /**
-     * @group Comptes
-     */
+      * @group Comptes
+      */
     Route::get('comptes', [App\Http\Controllers\CompteController::class, 'index']);
+    Route::get('comptes/{numero}', [App\Http\Controllers\CompteController::class, 'show']);
+    Route::post('comptes', [App\Http\Controllers\CompteController::class, 'store']);
+    Route::put('comptes/{numero}', [App\Http\Controllers\CompteController::class, 'update']);
+    Route::delete('comptes/{numero}', [App\Http\Controllers\CompteController::class, 'destroy']);
 });

@@ -1,0 +1,203 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Gestion Comptes",
+    "version": "1.0.0",
+    "description": "Récupère une liste paginée de comptes non supprimer  avec possibilité de filtrage et tri"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api/v1",
+      "description": "Serveur local"
+    }
+  ],
+  "paths": {
+    "/comptes": {
+      "get": {
+        "summary": "Lister tous les comptes",
+        "description": "Récupère une liste paginée de comptes avec possibilité de filtrage et tri.",
+        "operationId": "getComptes",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 },
+            "description": "Numéro de page"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10 },
+            "description": "Nombre d'éléments par page"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["epargne", "cheque"]
+            },
+            "description": "Filtrer par type de compte"
+          },
+          {
+            "name": "statut",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["actif", "bloque", "ferme"]
+            },
+            "description": "Filtrer par statut"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Recherche par numéro de compte ou nom du titulaire"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["dateCreation", "solde", "titulaire"],
+              "default": "dateCreation"
+            },
+            "description": "Champ de tri"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Ordre de tri"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des comptes récupérés avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                          },
+                          "numeroCompte": {
+                            "type": "string",
+                            "example": "C00123456"
+                          },
+                          "titulaire": {
+                            "type": "string",
+                            "example": "Amadou Diallo"
+                          },
+                          "type": {
+                            "type": "string",
+                            "example": "epargne"
+                          },
+                          "solde": {
+                            "type": "number",
+                            "example": 1250000
+                          },
+                          "devise": {
+                            "type": "string",
+                            "example": "FCFA"
+                          },
+                          "dateCreation": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-10-23T23:18:39.933Z"
+                          },
+                          "statut": {
+                            "type": "string",
+                            "example": "actif"
+                          },
+                          "motifBlocage": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "Inactivité de 30+ jours"
+                          },
+                          "metadata": {
+                            "type": "object",
+                            "properties": {
+                              "derniereModification": {
+                                "type": "string",
+                                "format": "date-time",
+                                "example": "2025-10-23T23:18:39.933Z"
+                              },
+                              "version": {
+                                "type": "integer",
+                                "example": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "currentPage": { "type": "integer", "example": 1 },
+                        "totalPages": { "type": "integer", "example": 3 },
+                        "totalItems": { "type": "integer", "example": 25 },
+                        "itemsPerPage": { "type": "integer", "example": 10 },
+                        "hasNext": { "type": "boolean", "example": true },
+                        "hasPrevious": { "type": "boolean", "example": false }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "string",
+                          "example": "/api/v1/comptes?page=1&limit=10"
+                        },
+                        "next": {
+                          "type": "string",
+                          "example": "/api/v1/comptes?page=2&limit=10"
+                        },
+                        "first": {
+                          "type": "string",
+                          "example": "/api/v1/comptes?page=1&limit=10"
+                        },
+                        "last": {
+                          "type": "string",
+                          "example": "/api/v1/comptes?page=3&limit=10"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
