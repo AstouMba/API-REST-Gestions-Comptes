@@ -19,16 +19,17 @@ class SwaggerController extends Controller
     }
 
     /**
-     * Sert le fichier JSON de documentation.
+     * Sert le fichier JSON de documentation (api-docs.json)
      */
     public function docs(Request $request)
     {
         $fileSystem = new Filesystem();
         $filePath = storage_path('api-docs/api-docs.json');
 
+        // Regénérer la doc si nécessaire
         if (config('l5-swagger.generate_always')) {
-            $generator = $this->generatorFactory->make('default');
             try {
+                $generator = $this->generatorFactory->make('default');
                 $generator->generateDocs();
             } catch (\Exception $e) {
                 Log::error($e);
@@ -37,7 +38,7 @@ class SwaggerController extends Controller
         }
 
         if (! $fileSystem->exists($filePath)) {
-            abort(404, "Impossible de localiser le fichier de documentation : $filePath");
+            abort(404, "Fichier de documentation introuvable : $filePath");
         }
 
         $content = $fileSystem->get($filePath);
@@ -47,28 +48,28 @@ class SwaggerController extends Controller
     }
 
     /**
-     * Affiche la page Swagger UI.
+     * Affiche Swagger UI
      */
     public function api(Request $request)
     {
         $documentation = 'default';
 
-        // ✅ Force le HTTPS absolu même sur Render
+        // ✅ Force une URL HTTPS complète pour le JSON
         $urlToDocs = route('l5-swagger.docs', [], true);
 
         return view('l5-swagger::index', [
             'documentation' => $documentation,
-            'secure' => true, 
+            'secure' => true, // ✅ Forcer HTTPS
             'urlToDocs' => $urlToDocs,
             'operationsSorter' => config('l5-swagger.operations_sort'),
             'configUrl' => config('l5-swagger.additional_config_url') ?? null,
             'validatorUrl' => config('l5-swagger.validator_url'),
             'useAbsolutePath' => config('l5-swagger.documentations.default.paths.use_absolute_path', true),
-        ]); 
-    } 
+        ]);
+    }
 
     /**
-     * Page de redirection OAuth2 (Swagger).
+     * Affiche la page de redirection OAuth2 (facultatif)
      */
     public function oauth2Callback(Request $request)
     {

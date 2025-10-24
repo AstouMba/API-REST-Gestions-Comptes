@@ -11,15 +11,14 @@ return [
 
             'routes' => [
                 'api'  => 'api/documentation',
-                'docs' => 'docs/json', // <-- JSON endpoint
+                'docs' => 'docs/json',
             ],
 
             'paths' => [
-                'docs' => storage_path('api-docs/api-docs.json'), // dossier où se trouve le JSON
+                'docs' => storage_path('api-docs'),
                 'docs_json' => 'api-docs.json',
                 'docs_yaml' => 'api-docs.yaml',
                 'format_to_use_for_docs' => 'json',
-
                 'annotations' => [
                     base_path('app'),
                 ],
@@ -27,6 +26,7 @@ return [
         ],
     ],
 
+    // ✅ Configuration pour Render (HTTPS)
     'paths' => [
         'use_absolute_path' => true,
         'docs_json' => 'api-docs.json',
@@ -36,12 +36,13 @@ return [
         'base' => '/api/v1',
         'views' => base_path('resources/views/vendor/l5-swagger'),
     ],
-    'secure' => true, 
 
+    // ✅ Force HTTPS derrière proxy Render
+    'proxy' => true,
+    'secure' => true,
 
     'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
     'swagger_version' => env('L5_SWAGGER_VERSION', '3.0'),
-    'proxy' => false,
     'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', null),
     'validator_url' => null,
 ];
