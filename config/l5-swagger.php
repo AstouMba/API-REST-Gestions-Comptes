@@ -28,7 +28,7 @@ return [
 
     // ✅ Configuration pour Render (HTTPS)
     'paths' => [
-        'use_absolute_path' => true,
+        'use_absolute_path' => false,
         'docs_json' => 'api-docs.json',
         'docs_yaml' => 'api-docs.yaml',
         'annotations' => base_path('app'),
