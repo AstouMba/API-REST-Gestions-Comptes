@@ -7,8 +7,8 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8000/api/v1",
-      "description": "Serveur local"
+      "url": "http://api-rest-gestions-comptes.onrender.com/api/v1",
+      "description": "Serveur de production"
     }
   ],
   "paths": {

@@ -31,22 +31,6 @@ class SwaggerController extends Controller
             try {
                 $generator = $this->generatorFactory->make('default');
                 $generator->generateDocs();
-
-                // Update the server URL dynamically based on the current request
-                $scheme = $request->getScheme();
-                $host = $request->getHost();
-                $port = $request->getPort();
-                if (($scheme === 'https' && $port === 443) || ($scheme === 'http' && $port === 80)) {
-                    $baseUrl = $scheme . '://' . $host . '/api/v1';
-                } else {
-                    $baseUrl = $scheme . '://' . $host . ':' . $port . '/api/v1';
-                }
-
-                // Read and update the JSON
-                $content = $fileSystem->get($filePath);
-                $json = json_decode($content, true);
-                $json['servers'][0]['url'] = $baseUrl;
-                $fileSystem->put($filePath, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             } catch (\Exception $e) {
                 Log::error($e);
                 abort(500, "Impossible de générer la documentation Swagger : " . $e->getMessage());
