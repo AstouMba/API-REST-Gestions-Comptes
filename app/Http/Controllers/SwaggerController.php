@@ -65,7 +65,7 @@ class SwaggerController extends Controller
             'validatorUrl' => config('l5-swagger.validator_url'),
             'useAbsolutePath' => config('l5-swagger.documentations.default.paths.use_absolute_path', true),
         ]); 
-    }
+    } 
 
     /**
      * Page de redirection OAuth2 (Swagger).
