@@ -7,8 +7,8 @@
     },
     "servers": [
         {
-            "url": "https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
-            "description": "Production server"
+            "url": "http://127.0.0.1:8000/api/v1/mbow.astou",
+            "description": "Local server"
         },
         {
             "url": ""
@@ -226,19 +226,19 @@
                 "properties": {
                     "self": {
                         "type": "string",
-                        "example": "/api/v1/comptes?page=1&limit=10"
+                        "example": "/api/v1/mbow.astou/comptes?page=1&limit=10"
                     },
                     "next": {
                         "type": "string",
-                        "example": "/api/v1/comptes?page=2&limit=10"
+                        "example": "/api/v1/mbow.astou/comptes?page=2&limit=10"
                     },
                     "first": {
                         "type": "string",
-                        "example": "/api/v1/comptes?page=1&limit=10"
+                        "example": "/api/v1/mbow.astou/comptes?page=1&limit=10"
                     },
                     "last": {
                         "type": "string",
-                        "example": "/api/v1/comptes?page=3&limit=10"
+                        "example": "/api/v1/mbow.astou/comptes?page=3&limit=10"
                     }
                 },
                 "type": "object"
