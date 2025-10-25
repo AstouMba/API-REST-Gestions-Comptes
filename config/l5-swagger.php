@@ -13,7 +13,7 @@ return [
             ],
 
             'routes' => [
-                'api'  => config('api.name') . '/api/documentation', // Swagger UI
+                'api'  => 'mbow.astou/api/documentation', // Swagger UI
                 'docs' => 'docs',              // JSON/YAML endpoint
             ],
 

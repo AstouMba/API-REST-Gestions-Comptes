@@ -16,8 +16,8 @@ use OpenApi\Annotations as OA;
  *     description="API for managing bank accounts"
  * )
  * @OA\Server(
- *     url="http://127.0.0.1:8000/api/v1/mbow.astou",
- *     description="Local server"
+ *     url="https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
+ *     description="Production server"
  * )
  * @OA\Schema(
  *     schema="Compte",
