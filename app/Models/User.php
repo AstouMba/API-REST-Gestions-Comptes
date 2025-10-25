@@ -23,6 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'login',
         'password',
+        'is_admin',
     ];
 
     /**
@@ -41,10 +42,16 @@ class User extends Authenticatable
      */
     protected $casts = [
         'password' => 'hashed',
+        'is_admin' => 'boolean',
     ];
 
     public function admin()
     {
         return $this->hasOne(Admin::class);
+    }
+
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'utilisateur_id');
     }
 }
