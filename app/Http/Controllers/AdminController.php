@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreClientRequest;
+use App\Http\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,6 +12,18 @@ use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
+    public function index()
+    {
+        $clients = Client::all();
+        return ClientResource::collection($clients);
+    }
+
+    public function show($id)
+    {
+        $client = Client::findOrFail($id);
+        return new ClientResource($client);
+    }
+
     public function store(StoreClientRequest $request)
     {
         return DB::transaction(function () use ($request) {
@@ -30,7 +43,7 @@ class AdminController extends Controller
                 'telephone' => $request->input('telephone'),
             ]);
 
-            return response()->json($client, 201);
+            return new ClientResource($client);
         });
     }
 }

@@ -48,13 +48,6 @@ class Compte extends Model
         return $this->hasMany(Transaction::class);
     }
 
-    public function getSoldeAttribute()
-    {
-        $depots = $this->transactions()->where('type', 'depot')->sum('montant');
-        $retraits = $this->transactions()->where('type', 'retrait')->sum('montant');
-        $virements = $this->transactions()->where('type', 'virement')->sum('montant');
-        return $depots - $retraits - $virements;
-    }
 
     public function setNumeroAttribute($value)
     {
@@ -89,6 +82,22 @@ class Compte extends Model
     public function scopeByNumero($query, $numero)
     {
         return $query->where('numero', $numero);
+    }
+
+    public function scopeByClient($query, $telephone)
+    {
+        return $query->whereHas('client', function ($q) use ($telephone) {
+            $q->where('telephone', $telephone);
+        });
+    }
+
+    public function scopeForUser($query, $user)
+    {
+        if ($user->is_admin) {
+            return $query; // Admin sees all
+        } else {
+            return $query->where('client_id', $user->client->id); // Client sees only their accounts
+        }
     }
 
     public function getTitulaireAttribute()

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class RateLimitingMiddleware
@@ -15,16 +16,17 @@ class RateLimitingMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $key = $request->ip();
-        $maxAttempts = 100;
-        $decayMinutes = 1;
+        $response = $next($request);
 
-        if (cache()->get("rate_limit_{$key}", 0) >= $maxAttempts) {
-            return response()->json(['message' => 'Too many requests'], 429);
+        if ($response->status() === 429) {
+            Log::warning('Rate limit exceeded', [
+                'user_id' => $request->user()?->id,
+                'ip' => $request->ip(),
+                'url' => $request->fullUrl(),
+                'user_agent' => $request->userAgent(),
+            ]);
         }
 
-        cache()->put("rate_limit_{$key}", cache()->get("rate_limit_{$key}", 0) + 1, $decayMinutes * 60);
-
-        return $next($request);
+        return $response;
     }
 }

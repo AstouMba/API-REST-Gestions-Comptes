@@ -13,7 +13,7 @@ return [
             ],
 
             'routes' => [
-                'api'  => 'api/documentation', // Swagger UI
+                'api'  => config('api.name') . '/api/documentation', // Swagger UI
                 'docs' => 'docs',              // JSON/YAML endpoint
             ],
 
@@ -53,7 +53,7 @@ return [
         'paths' => [
             'docs' => storage_path('api-docs'),
             'views' => base_path('resources/views/vendor/l5-swagger'),
-            'base' => env('APP_URL', 'https://api-rest-gestions-comptes.onrender.com') . '/api/v1',
+            'base' => '',
             'excludes' => [],
         ],
 
@@ -104,7 +104,7 @@ return [
         ],
 
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('APP_URL', 'https://api-rest-gestions-comptes.onrender.com'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://127.0.0.1:8000'),
         ],
     ],
 

@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\CompteController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,25 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-/**
- * @group Authentication
- */
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-/**
- * @group Admin
- */
-Route::middleware(['admin'])->post('/admin/clients', [App\Http\Controllers\AdminController::class, 'store']);
-
-Route::prefix('v1')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     /**
-      * @group Comptes
-      */
-    Route::get('comptes', [App\Http\Controllers\CompteController::class, 'index']);
-    Route::get('comptes/{numero}', [App\Http\Controllers\CompteController::class, 'show']);
-    Route::post('comptes', [App\Http\Controllers\CompteController::class, 'store']);
-    Route::put('comptes/{numero}', [App\Http\Controllers\CompteController::class, 'update']);
-    Route::delete('comptes/{numero}', [App\Http\Controllers\CompteController::class, 'destroy']);
+        * @group Comptes
+        */
+    Route::prefix('v1/' . config('api.name'))->group(function () {
+        Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
+        Route::get('comptes/archives', [CompteController::class, 'getArchivedComptes'])->name('comptes.archives');
+    });
 });

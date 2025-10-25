@@ -54,12 +54,12 @@ class SwaggerController extends Controller
     {
         $documentation = 'default';
 
-        // ✅ Force une URL HTTPS complète pour le JSON
+        //  Force une URL HTTPS complète pour le JSON
         $urlToDocs = route('l5-swagger.docs', [], true);
 
         return view('l5-swagger::index', [
             'documentation' => $documentation,
-            'secure' => true, // ✅ Forcer HTTPS
+            'secure' => true, 
             'urlToDocs' => $urlToDocs,
             'operationsSorter' => config('l5-swagger.operations_sort'),
             'configUrl' => config('l5-swagger.additional_config_url') ?? null,
