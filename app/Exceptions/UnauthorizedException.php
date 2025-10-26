@@ -10,4 +10,9 @@ class UnauthorizedException extends Exception
     {
         parent::__construct($message, $code, $previous);
     }
+
+    public function getErrorCode()
+    {
+        return 'UNAUTHORIZED';
+    }
 }

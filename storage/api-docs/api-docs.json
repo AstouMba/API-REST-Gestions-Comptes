@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:8000/api/v1/mbow.astou",
+            "url": "http://0.0.0.0:8020/api/v1/mbow.astou",
             "description": "Local server"
         },
         {
@@ -18,7 +18,7 @@
         "/comptes": {
             "get": {
                 "summary": "Lister tous les comptes",
-                "description": "Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes. Liste des comptes non supprimés de type cheque ou epargne actif.",
+                "description": "Admin peut récupérer la liste de tous les comptes actifs. Client peut récupérer la liste de ses comptes actifs. Liste des comptes non supprimés de type cheque ou epargne actif.",
                 "operationId": "5fdb1d9d6a1e1d81e65a694d33a249c6",
                 "parameters": [
                     {
@@ -43,33 +43,6 @@
                         }
                     },
                     {
-                        "name": "type",
-                        "in": "query",
-                        "description": "Filtrer par type",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "epargne",
-                                "cheque"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "statut",
-                        "in": "query",
-                        "description": "Filtrer par statut",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "actif",
-                                "bloque",
-                                "ferme"
-                            ]
-                        }
-                    },
-                    {
                         "name": "search",
                         "in": "query",
                         "description": "Recherche par titulaire ou numéro",
@@ -85,9 +58,9 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "default": "dateCreation",
+                            "default": "created_at",
                             "enum": [
-                                "dateCreation",
+                                "created_at",
                                 "solde",
                                 "titulaire"
                             ]
@@ -130,6 +103,113 @@
                                         },
                                         "links": {
                                             "$ref": "#/components/schemas/Links"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Créer un compte",
+                "description": "Créer un nouveau compte bancaire",
+                "operationId": "a896aedada2e34a114a6b2bda0468e82",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "cheque"
+                                    },
+                                    "soldeInitial": {
+                                        "type": "number",
+                                        "example": 500000
+                                    },
+                                    "devise": {
+                                        "type": "string",
+                                        "example": "FCFA"
+                                    },
+                                    "client": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": null
+                                            },
+                                            "titulaire": {
+                                                "type": "string",
+                                                "example": "Hawa BB Wane"
+                                            },
+                                            "nci": {
+                                                "type": "string",
+                                                "example": "1234567890123"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "cheikh.sy@example.com"
+                                            },
+                                            "telephone": {
+                                                "type": "string",
+                                                "example": "+221771234567"
+                                            },
+                                            "adresse": {
+                                                "type": "string",
+                                                "example": "Dakar, Sénégal"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Compte"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "VALIDATION_ERROR"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Les données fournies sont invalides"
+                                                },
+                                                "details": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -226,19 +306,19 @@
                 "properties": {
                     "self": {
                         "type": "string",
-                        "example": "/api/v1/mbow.astou/comptes?page=1&limit=10"
+                        "example": "/api/v1/comptes?page=1&limit=10"
                     },
                     "next": {
                         "type": "string",
-                        "example": "/api/v1/mbow.astou/comptes?page=2&limit=10"
+                        "example": "/api/v1/comptes?page=2&limit=10"
                     },
                     "first": {
                         "type": "string",
-                        "example": "/api/v1/mbow.astou/comptes?page=1&limit=10"
+                        "example": "/api/v1/comptes?page=1&limit=10"
                     },
                     "last": {
                         "type": "string",
-                        "example": "/api/v1/mbow.astou/comptes?page=3&limit=10"
+                        "example": "/api/v1/comptes?page=3&limit=10"
                     }
                 },
                 "type": "object"

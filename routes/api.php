@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['api', 'logging'])->group(function () {
     /**
-        * @group Comptes
-        */
+         * @group Comptes
+         */
     Route::prefix('v1/' . config('api.name'))->group(function () {
-        Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
-        Route::get('comptes/archives', [CompteController::class, 'getArchivedComptes'])->name('comptes.archives');
-    });
+           Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
+           Route::post('comptes', [CompteController::class, 'store'])->middleware('admin')->name('comptes.store');
+       });
 });

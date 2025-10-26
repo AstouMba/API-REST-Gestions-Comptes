@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -13,13 +14,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminUser = \App\Models\User::factory()->create();
-        \App\Models\Admin::create([
+        $adminUser = User::factory()->create([
+            'is_admin' => true,
+        ]);
+        Admin::create([
             'id' => Str::uuid(),
             'user_id' => $adminUser->id,
         ]);
 
-        \App\Models\User::factory(9)->create();
+        User::factory(9)->create();
 
         $this->call([
             ClientSeeder::class,

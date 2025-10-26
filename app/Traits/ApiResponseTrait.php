@@ -22,11 +22,18 @@ trait ApiResponseTrait
         return response()->json($response, $code);
     }
 
-    public function errorResponse($message, $code = 400)
+    public function errorResponse($message, $code = 400, $details = null, $errorCode = null)
     {
+        $error = [
+            'code' => $errorCode ?: 'ERROR',
+            'message' => $message,
+        ];
+        if ($details) {
+            $error['details'] = $details;
+        }
         return response()->json([
             'success' => false,
-            'message' => $message
+            'error' => $error
         ], $code);
     }
 }

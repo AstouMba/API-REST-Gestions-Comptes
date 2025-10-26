@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Compte;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
@@ -14,8 +15,8 @@ class CompteSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-        \App\Models\Compte::truncate();
+        Compte::truncate();
         Schema::enableForeignKeyConstraints();
-        \App\Models\Compte::factory(20)->create();
+        Compte::factory(20)->create();
     }
 }
