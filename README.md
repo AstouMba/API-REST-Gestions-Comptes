@@ -26,14 +26,18 @@ Une API RESTful pour la gestion de comptes bancaires avec calcul de solde dynami
 
 - ✅ Gestion des utilisateurs avec UUID
 - ✅ Création de clients par admins
-- ✅ Gestion de comptes bancaires (épargne, chèque)
+- ✅ Création automatique de comptes avec vérification client
+- ✅ Gestion de comptes bancaires (épargne, chèque, courant)
 - ✅ Transactions (dépôts, retraits, virements)
 - ✅ Calcul de solde dynamique
 - ✅ Pagination et filtres avancés
 - ✅ Recherche et tri
 - ✅ Rate limiting
-- ✅ API versionnée (/v1)
-- ✅ Documentation complète
+- ✅ Authentification via Sanctum
+- ✅ Notifications par email et SMS
+- ✅ Journalisation des opérations
+- ✅ API versionnée (/v1/mbow.astou)
+- ✅ Documentation complète avec Swagger
 
 ## 🛠 Technologies
 
@@ -41,8 +45,12 @@ Une API RESTful pour la gestion de comptes bancaires avec calcul de solde dynami
 - **Base de données**: PostgreSQL 15+
 - **Langage**: PHP 8.2+
 - **ORM**: Eloquent
+- **Authentification**: Laravel Sanctum
+- **Mail**: Laravel Mail
+- **Queue**: Laravel Queue (pour événements)
+- **Validation**: Règles personnalisées sans regex (NCI, Téléphone Sénégal)
 - **Testing**: PHPUnit
-- **Documentation**: Postman
+- **Documentation**: Swagger/OpenAPI, Postman
 
 ## 📦 Installation
 
@@ -127,6 +135,7 @@ php artisan db:seed
 - `id` (UUID) - Clé primaire
 - `login` (string) - Unique
 - `password` (string) - Hashé
+- `code` (string) - Nullable (pour première connexion)
 - `timestamps`
 
 #### Admins
@@ -137,17 +146,18 @@ php artisan db:seed
 #### Clients
 - `id` (UUID) - Clé primaire
 - `utilisateur_id` (UUID) - FK vers users
-- `nom` (string)
+- `titulaire` (string)
 - `email` (string) - Unique
 - `adresse` (string) - Nullable
 - `telephone` (string) - Nullable
+- `nci` (string) - Unique, Nullable (Numéro de Carte d'Identité)
 - `timestamps`
 
 #### Comptes
 - `id` (UUID) - Clé primaire
 - `client_id` (UUID) - FK vers clients
-- `numero` (string) - Unique
-- `type` (enum: epargne, cheque)
+- `numero` (string) - Unique (format: CXXXXXX)
+- `type` (enum: epargne, cheque, courant)
 - `statut` (enum: actif, bloque, ferme)
 - `devise` (string) - Default: FCFA
 - `motifBlocage` (string) - Nullable
@@ -166,11 +176,11 @@ php artisan db:seed
 
 ### Base URL
 ```
-http://localhost:8000/api/v1
+http://127.0.0.1:8000/api/v1/mbow.astou
 ```
 
 ### Authentication
-Pour l'instant, pas d'authentification requise (middleware commenté).
+Authentification requise via Bearer Token (Laravel Sanctum). Obtenez un token via `/api/sanctum/token`.
 
 ### Endpoints
 
@@ -190,7 +200,7 @@ Récupère la liste des comptes avec pagination, filtres et tri.
 
 **Exemple de requête:**
 ```bash
-curl "http://localhost:8000/api/v1/comptes?page=1&limit=10&type=epargne&statut=actif&sort=solde&order=desc"
+curl -H "Authorization: Bearer {token}" "http://127.0.0.1:8000/api/v1/mbow.astou/comptes?page=1&limit=10&type=epargne&statut=actif&sort=solde&order=desc"
 ```
 
 **Réponse (200):**
@@ -264,12 +274,87 @@ Accept: application/json
   "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "utilisateur_id": "660e8400-e29b-41d4-a716-446655440000",
-    "nom": "John Doe",
+    "titulaire": "John Doe",
     "email": "john@example.com",
     "adresse": "123 Rue Exemple",
     "telephone": "1234567890",
+    "nci": "1234567890123",
     "created_at": "2023-10-23T13:00:00Z",
     "updated_at": "2023-10-23T13:00:00Z"
+  }
+}
+```
+
+#### 3. Créer un Compte
+**POST /api/v1/mbow.astou/comptes**
+
+Crée un nouveau compte bancaire. Vérifie si le client existe par NCI ou téléphone ; le crée sinon avec un mot de passe et code aléatoires. Envoie des notifications par email et SMS.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
+```
+
+**Body:**
+```json
+{
+  "type": "cheque",
+  "soldeInitial": 500000,
+  "devise": "FCFA",
+  "client": {
+    "id": null,
+    "titulaire": "Hawa BB Wane",
+    "nci": "1234567890123",
+    "email": "cheikh.sy@example.com",
+    "telephone": "+221771234567",
+    "adresse": "Dakar, Sénégal"
+  }
+}
+```
+
+**Règles de Validation:**
+- Tous les champs sont obligatoires.
+- `telephone` : Unique, doit commencer par +221, 13 caractères, préfixe mobile valide (70, 75, 76, 77, 78), pas de séquences répétitives ou séquentielles (validation sans regex).
+- `email` : Unique, valide.
+- `nci` : Unique, exactement 13 chiffres, pas de séquences répétitives ou séquentielles (validation sans regex).
+- `soldeInitial` : ≥ 10 000 FCFA.
+- `type` : cheque, epargne, courant.
+
+**Réponse (201):**
+```json
+{
+  "success": true,
+  "message": "Compte créé avec succès",
+  "data": {
+    "id": "660f9511-f30c-52e5-b827-557766551111",
+    "numeroCompte": "C00123460",
+    "titulaire": "Hawa BB Wane",
+    "type": "cheque",
+    "solde": 500000,
+    "devise": "FCFA",
+    "dateCreation": "2025-10-19T10:30:00Z",
+    "statut": "actif",
+    "metadata": {
+      "derniereModification": "2025-10-19T10:30:00Z",
+      "version": 1
+    }
+  }
+}
+```
+
+**Réponse (400):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données fournies sont invalides",
+    "details": {
+      "client.nci": "Le NCI est requis",
+      "soldeInitial": "Le solde initial doit être supérieur à 0"
+    }
   }
 }
 ```
@@ -292,15 +377,20 @@ Accept: application/json
 - **Relations**:
   - `utilisateur()` - belongsTo User
   - `comptes()` - hasMany Compte
+- **Champs**:
+  - `titulaire` - Nom du titulaire
+  - `nci` - Numéro de Carte d'Identité (unique)
 
 ### Compte
 - **Clé primaire**: UUID
 - **Relations**:
   - `client()` - belongsTo Client
   - `transactions()` - hasMany Transaction
+  - `depots()` - hasMany Transaction (type: depot)
+  - `retraits()` - hasMany Transaction (type: retrait)
 - **Attributs calculés**:
-  - `solde` - Somme des dépôts - retraits - virements
-  - `titulaire` - Nom du client
+  - `solde` - Somme des dépôts - retraits (calcul dynamique)
+  - `titulaire` - Nom du client (titulaire)
   - `metadata` - Informations de modification
 - **Scopes**:
   - `type($type)` - Filtre par type
@@ -322,9 +412,10 @@ Accept: application/json
 
 ### CompteController
 - **index()**: Liste les comptes avec pagination et filtres
-- **Middleware**: rate.limit
-- **Validation**: Query parameters
-- **Response**: CompteResource avec pagination
+- **store()**: Crée un compte avec vérification/création client, notifications
+- **Middleware**: auth:sanctum, logging
+- **Validation**: StoreCompteRequest (NCI, téléphone Sénégal, etc.)
+- **Response**: CompteResource
 
 ## 🛡️ Middleware
 
@@ -335,6 +426,24 @@ Accept: application/json
 ### RateLimitingMiddleware
 - Limite à 100 requêtes/minute par IP
 - Utilise cache pour le comptage
+
+### LoggingMiddleware
+- Journalise toutes les requêtes API (date, heure, hôte, opération, ressource, statut)
+- Appliqué à toutes les routes API
+
+## ✅ Règles de Validation Personnalisées
+
+### NciRule
+- Vérifie que le NCI est exactement 13 chiffres
+- Rejette les séquences répétitives (ex: 1111111111111) avec une boucle
+- Rejette les séquences séquentielles (ex: 1234567890123) avec une boucle
+
+### TelephoneSenegalRule
+- Vérifie que le numéro commence par +221 avec str_starts_with()
+- Vérifie la longueur totale de 13 caractères avec strlen()
+- Vérifie que les 9 derniers caractères sont des chiffres avec is_numeric() et substr()
+- Valide les préfixes mobiles (70, 75, 76, 77, 78) avec in_array()
+- Rejette les séquences répétitives avec une boucle
 
 ## 🧪 Tests
 
@@ -363,14 +472,15 @@ public function test_can_list_comptes()
 Importez `API-gestionComptes.postman_collection.json` dans Postman pour tester les endpoints.
 
 ### Variables
-- `base_url`: http://localhost:8000/api/v1
+- `base_url`: http://127.0.0.1:8000/api/v1/mbow.astou
+- `token`: Bearer token pour authentification
 
 ### Requêtes incluses
 - List Comptes (avec filtres)
 - List Comptes (tous)
 - List Comptes (recherche)
 - Create Client
-
+- Create Compte (avec client)
 ## 🤝 Contributing
 
 1. Fork le projet

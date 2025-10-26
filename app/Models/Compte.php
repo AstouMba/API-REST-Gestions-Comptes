@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Compte extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
+        'id',
         'client_id',
         'numero',
         'type',
@@ -29,12 +31,8 @@ class Compte extends Model
     {
         static::addGlobalScope('activeAccounts', function ($query) {
             $query->whereNull('deleted_at')
-                  ->where(function ($q) {
-                      $q->where('type', 'cheque')
-                        ->orWhere(function ($sub) {
-                            $sub->where('type', 'epargne')->where('statut', 'actif');
-                        });
-                  });
+                  ->whereIn('type', ['cheque', 'epargne'])
+                  ->where('statut', 'actif');
         });
     }
 
@@ -45,7 +43,17 @@ class Compte extends Model
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class);
+         return $this->hasMany(Transaction::class);
+    }
+
+    public function depots()
+    {
+         return $this->hasMany(Transaction::class)->where('type', 'depot');
+    }
+
+    public function retraits()
+    {
+         return $this->hasMany(Transaction::class)->where('type', 'retrait');
     }
 
 
@@ -71,13 +79,13 @@ class Compte extends Model
 
     public function scopeSearch($query, $search)
     {
-        return $query->where(function ($q) use ($search) {
-            $q->where('numero', 'like', '%' . $search . '%')
-              ->orWhereHas('client', function ($clientQuery) use ($search) {
-                  $clientQuery->where('nom', 'like', '%' . $search . '%');
-              });
-        });
-    }
+         return $query->where(function ($q) use ($search) {
+             $q->where('numero', 'like', '%' . $search . '%')
+               ->orWhereHas('client', function ($clientQuery) use ($search) {
+                   $clientQuery->where('titulaire', 'like', '%' . $search . '%');
+               });
+         });
+     }
 
     public function scopeByNumero($query, $numero)
     {
@@ -93,23 +101,13 @@ class Compte extends Model
 
     public function scopeForUser($query, $user)
     {
-        if ($user->is_admin) {
+        if ($user && $user->is_admin) {
             return $query; // Admin sees all
-        } else {
+        } elseif ($user) {
             return $query->where('client_id', $user->client->id); // Client sees only their accounts
+        } else {
+            return $query; // No user, return all
         }
     }
 
-    public function getTitulaireAttribute()
-    {
-        return $this->client->nom;
-    }
-
-    public function getMetadataAttribute()
-    {
-        return [
-            'derniereModification' => $this->updated_at,
-            'version' => 1,
-        ];
-    }
 }

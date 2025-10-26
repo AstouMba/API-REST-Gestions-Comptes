@@ -13,6 +13,7 @@ class Transaction extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'id',
         'compte_id',
         'montant',
         'type',

@@ -40,13 +40,13 @@ class Handler extends ExceptionHandler
     {
         if ($request->expectsJson()) {
             if ($exception instanceof NotFoundException) {
-                return $this->errorResponse($exception->getMessage(), $exception->getCode());
+                return $this->errorResponse($exception->getMessage(), $exception->getCode(), null, $exception->getErrorCode());
             }
             if ($exception instanceof ValidationException) {
-                return $this->errorResponse($exception->getMessage(), $exception->getCode());
+                return $this->errorResponse($exception->getMessage(), $exception->getCode(), null, $exception->getErrorCode());
             }
             if ($exception instanceof UnauthorizedException) {
-                return $this->errorResponse($exception->getMessage(), $exception->getCode());
+                return $this->errorResponse($exception->getMessage(), $exception->getCode(), null, $exception->getErrorCode());
             }
         }
 

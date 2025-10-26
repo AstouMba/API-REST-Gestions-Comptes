@@ -35,7 +35,8 @@ class TransactionService
     public function createTransaction(array $data)
     {
         // Simuler l'utilisateur connecté
-        $data['user_id'] = 1; // ID fixe temporaire
+        // $data['user_id'] = 1; // ID fixe temporaire - removed as not in model
+        $data['id'] = \Illuminate\Support\Str::uuid();
         return Transaction::create($data);
     }
 

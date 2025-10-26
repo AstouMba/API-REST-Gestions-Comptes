@@ -4,21 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Client extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     public $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
-        'utilisateur_id',
-        'nom',
-        'email',
-        'adresse',
-        'telephone',
-    ];
+         'id',
+         'utilisateur_id',
+         'titulaire',
+         'email',
+         'adresse',
+         'telephone',
+         'nci',
+     ];
 
     public function utilisateur()
     {
