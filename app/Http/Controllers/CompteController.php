@@ -7,6 +7,8 @@ use App\Services\CompteService;
 use App\Traits\ApiResponseTrait;
 use App\Http\Requests\StoreCompteRequest;
 use App\Models\Compte;
+use App\Models\User;
+use App\Exceptions\CompteNotFoundException;
 use Illuminate\Http\Request;
 
 use OpenApi\Annotations as OA;
@@ -119,7 +121,7 @@ class CompteController extends Controller
         *             @OA\Property(property="links", ref="#/components/schemas/Links")
         *         )
         *     ),
-        *     security={{"bearerAuth":{}}}
+        *     security={}
         * )
         * @return \Illuminate\Http\JsonResponse
         */
@@ -204,7 +206,78 @@ class CompteController extends Controller
         return $this->successResponse(new CompteResource($compte), 'Compte créé avec succès', 201);
     }
 
+    /**
+     * Récupérer un compte par ID
+     *
+     * @OA\Get(
+     *     path="/comptes/{compteId}",
+     *     summary="Récupération d’un compte via ID",
+     *     description="Admin peut récupérer n’importe quel compte via son ID. Client ne peut récupérer qu’un de ses propres comptes via son ID. Recherche d'abord en local, puis sur base serverless si introuvable.",
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="user_id",
+     *         in="query",
+     *         description="ID de l'utilisateur",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte récupéré avec succès",
+     *         @OA\JsonContent(ref="#/components/schemas/Compte")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Paramètre manquant",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Le paramètre user_id est requis")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte ou utilisateur non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
+     *                 @OA\Property(property="details", type="object",
+     *                     @OA\Property(property="compteId", type="string", example="550e8400-e29b-41d4-a716-446655440000")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Request $request, $compteId)
+    {
+        $userId = $request->query('user_id');
+        if (!$userId) {
+            throw new \App\Exceptions\ValidationException('Le paramètre user_id est requis', 400, null, 'VALIDATION_ERROR');
+        }
+        $user = User::find($userId);
+        if (!$user) {
+            throw new \App\Exceptions\NotFoundException('Utilisateur non trouvé', 404, null, 'USER_NOT_FOUND');
+        }
 
-
+        try {
+            $compte = $this->compteService->getCompteById($user, $compteId);
+            return $this->successResponse(new CompteResource($compte), 'Compte récupéré avec succès', 200);
+        } catch (CompteNotFoundException $e) {
+            throw $e;
+        }
+    }
 
 }

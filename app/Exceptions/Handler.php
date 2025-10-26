@@ -8,6 +8,7 @@ use App\Traits\ApiResponseTrait;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ValidationException;
 use App\Exceptions\UnauthorizedException;
+use App\Exceptions\CompteNotFoundException;
 
 class Handler extends ExceptionHandler
 {
@@ -41,6 +42,9 @@ class Handler extends ExceptionHandler
         if ($request->expectsJson()) {
             if ($exception instanceof NotFoundException) {
                 return $this->errorResponse($exception->getMessage(), $exception->getCode(), null, $exception->getErrorCode());
+            }
+            if ($exception instanceof CompteNotFoundException) {
+                return $this->errorResponse($exception->getMessage(), $exception->getCode(), ['compteId' => $exception->getCompteId()], $exception->getErrorCode());
             }
             if ($exception instanceof ValidationException) {
                 return $this->errorResponse($exception->getMessage(), $exception->getCode(), null, $exception->getErrorCode());

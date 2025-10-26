@@ -55,6 +55,22 @@ class CompteService
         return Compte::forUser($user)->byNumero($numero)->first();
     }
 
+    public function getCompteById($user, $compteId)
+    {
+        $query = Compte::forUser($user)->where('id', $compteId);
+
+        $compte = $query->first();
+
+        if ($compte) {
+            return $compte;
+        }
+
+        // If not found locally, simulate serverless search
+        // In a real scenario, this would query an external serverless database
+        // For now, throw exception if not found
+        throw new \App\Exceptions\CompteNotFoundException($compteId);
+    }
+
     public function createCompte(array $data)
     {
         return \DB::transaction(function () use ($data) {
