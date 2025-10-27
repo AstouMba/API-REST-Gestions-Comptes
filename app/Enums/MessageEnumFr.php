@@ -19,4 +19,12 @@ class MessageEnumFr
     const UUID = 'UUID invalide';
     const EXISTS = 'N\'existe pas';
     const UNIQUE = 'Déjà utilisé';
+    const USER_ID_REQUIRED = 'Le paramètre user_id est requis';
+    const USER_NOT_FOUND = 'Utilisateur non trouvé';
+    const COMPTE_RETRIEVED = 'Compte récupéré avec succès';
+    const COMPTES_RETRIEVED = 'Comptes retrieved successfully';
+    const COMPTE_CREATED = 'Compte creation request submitted successfully';
+    const ERROR_VALIDATION = 'VALIDATION_ERROR';
+    const ERROR_USER_NOT_FOUND = 'USER_NOT_FOUND';
+    const ERROR_COMPTE_NOT_FOUND = 'COMPTE_NOT_FOUND';
 }

@@ -3,9 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
-use App\Rules\NciRule;
-use App\Rules\TelephoneSenegalRule;
 use App\Enums\MessageEnumFr;
 use App\Services\CustomValidationRules;
 
