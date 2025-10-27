@@ -37,33 +37,31 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
 
 # # Créer un fichier .env minimal pour le build
 
-# RUN echo "APP_NAME=Laravel" > .env && \
-#     echo "APP_ENV=production" >> .env && \
-#     echo "APP_KEY=" >> .env && \
-#     echo "APP_DEBUG=false" >> .env && \
-#     echo "APP_URL=http://localhost" >> .env && \
-#     echo "" >> .env && \
-#     echo "LOG_CHANNEL=stack" >> .env && \
-#     echo "LOG_LEVEL=error" >> .env && \
-#     echo "" >> .env && \
-#     echo "DB_CONNECTION=pgsql" >> .env && \
-#     echo "DB_HOST=ballast.proxy.rlwy.net" >> .env && \
-#     echo "DB_PORT=44054" >> .env && \
-#     echo "DB_DATABASE=railway" >> .env && \
-#     echo "DB_USERNAME=postgres" >> .env && \
-#     echo "DB_PASSWORD=qaPPTWkqUEngIkSozVbfwWvgqNMrxWou" >> .env && \
-#     echo "" >> .env && \
-#     echo "CACHE_DRIVER=file" >> .env && \
-#     echo "SESSION_DRIVER=file" >> .env && \
-#     echo "QUEUE_CONNECTION=sync" >> .env && echo "" >> .env && \
-#     echo "API_NAME=mbow.astou" >> .env
-RUN echo "Generating .env from .env.production" >> .env  
+RUN echo "APP_NAME=Laravel" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_KEY=" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=http://localhost" >> .env && \
+    echo "" >> .env && \
+    echo "LOG_CHANNEL=stack" >> .env && \
+    echo "LOG_LEVEL=error" >> .env && \
+    echo "" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env && \
+    echo "DB_HOST=switchyard.proxy.rlwy.net" >> .env && \
+    echo "DB_PORT=22380" >> .env && \
+    echo "DB_DATABASE=railway" >> .env && \
+    echo "DB_USERNAME=postgres" >> .env && \
+    echo "DB_PASSWORD=EmLFoXLAGGnvTdvYWNWeWSMIwZwgzBJW" >> .env && \
+    echo "" >> .env && \
+    echo "CACHE_DRIVER=file" >> .env && \
+    echo "SESSION_DRIVER=file" >> .env && \
+    echo "QUEUE_CONNECTION=sync" >> .env && echo "" >> .env && \
+    echo "API_NAME=mbow.astou" >> .env
 
-COPY .env.production .env
 
 # Changer les permissions du fichier .env pour l'utilisateur laravel
 RUN chown laravel:laravel .env
-
+4
 # Générer la clé d'application et optimiser
 USER laravel
 RUN php artisan key:generate --force && \
