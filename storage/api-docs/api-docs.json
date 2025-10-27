@@ -11,6 +11,10 @@
             "description": "Local server"
         },
         {
+            "url": "https://api-rest-gestions-comptes.onrender.com/mbow.astou/api/documentation",
+            "description": "Production server"
+        },
+        {
             "url": ""
         }
     ],
@@ -111,11 +115,7 @@
                         }
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                "security": []
             },
             "post": {
                 "summary": "Créer un compte",
@@ -218,7 +218,11 @@
                         }
                     }
                 },
-                "security": []
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/comptes/{compteId}": {
@@ -325,7 +329,11 @@
                         }
                     }
                 },
-                "security": []
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         }
     },
