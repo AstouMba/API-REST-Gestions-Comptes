@@ -21,6 +21,7 @@ Route::middleware(['api', 'logging'])->group(function () {
     Route::prefix('v1/' . config('api.name'))->group(function () {
             Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
             Route::get('comptes/{compteId}', [CompteController::class, 'show'])->name('comptes.show');
-            Route::post('comptes', [CompteController::class, 'store'])->middleware('admin')->name('comptes.store');
+            Route::post('comptes', [CompteController::class, 'store'])->name('comptes.store');
         });
 });
+

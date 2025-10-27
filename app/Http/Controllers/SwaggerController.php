@@ -59,7 +59,7 @@ class SwaggerController extends Controller
 
         return view('l5-swagger::index', [
             'documentation' => $documentation,
-            'secure' => true, 
+            'secure' => false,
             'urlToDocs' => $urlToDocs,
             'operationsSorter' => config('l5-swagger.operations_sort'),
             'configUrl' => config('l5-swagger.additional_config_url') ?? null,

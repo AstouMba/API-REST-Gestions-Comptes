@@ -73,66 +73,17 @@ class CompteService
 
     public function createCompte(array $data)
     {
-        return \DB::transaction(function () use ($data) {
-            // Check if client exists by NCI or telephone
-            $client = Client::where('nci', $data['client']['nci'])
-                              ->orWhere('telephone', $data['client']['telephone'])
-                              ->first();
+        // Log the data for debugging
+        \Log::info('Service data received', ['data' => $data]);
 
-            if (!$client) {
-                // Create user
-                $password = Str::random(8);
-                $code = Str::random(6);
-                $user = User::create([
-                    'id' => Str::uuid(),
-                    'login' => $data['client']['email'],
-                    'password' => Hash::make($password),
-                    'code' => $code,
-                ]);
+        // Dispatch the job for asynchronous creation
+        \App\Jobs\CreateCompteJob::dispatch($data);
 
-                // Create client
-                $client = Client::create([
-                    'id' => Str::uuid(),
-                    'utilisateur_id' => $user->id,
-                    'titulaire' => $data['client']['titulaire'],
-                    'email' => $data['client']['email'],
-                    'adresse' => $data['client']['adresse'],
-                    'telephone' => $data['client']['telephone'],
-                    'nci' => $data['client']['nci'],
-                ]);
-            }
-
-            // Generate unique numeroCompte
-            do {
-                $numeroCompte = 'C' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT);
-            } while (Compte::where('numero', $numeroCompte)->exists());
-
-            // Create account
-            $compte = Compte::create([
-                'id' => Str::uuid(),
-                'client_id' => $client->id,
-                'numero' => $numeroCompte,
-                'type' => $data['type'],
-                'statut' => 'actif',
-                'devise' => $data['devise'],
-            ]);
-
-            // Create initial deposit transaction
-            Transaction::create([
-                'id' => Str::uuid(),
-                'compte_id' => $compte->id,
-                'montant' => $data['soldeInitial'],
-                'type' => 'depot',
-                'description' => 'Solde initial',
-            ]);
-
-            // Fire event for notifications only if new client was created
-            if (isset($password)) {
-                event(new \App\Events\CompteCreated($compte, $client, $password, $code));
-            }
-
-            return $compte;
-        });
+        // Return a temporary response since it's asynchronous
+        return [
+            'message' => 'Compte creation request submitted. It will be processed in the background.',
+            'status' => 'pending'
+        ];
     }
 
 }

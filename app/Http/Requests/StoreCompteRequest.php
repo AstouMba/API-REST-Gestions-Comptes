@@ -33,7 +33,7 @@ class StoreCompteRequest extends FormRequest
             $data = $this->all();
 
             CustomValidationRules::required($validator, 'type', $data['type'], MessageEnumFr::REQUIRED);
-            CustomValidationRules::in($validator, 'type', $data['type'], ['cheque', 'epargne', 'courant'], MessageEnumFr::IN);
+            CustomValidationRules::in($validator, 'type', $data['type'], ['cheque', 'epargne'], MessageEnumFr::IN);
             CustomValidationRules::required($validator, 'soldeInitial', $data['soldeInitial'], MessageEnumFr::REQUIRED);
             CustomValidationRules::numeric($validator, 'soldeInitial', $data['soldeInitial'], MessageEnumFr::NUMERIC);
             CustomValidationRules::min($validator, 'soldeInitial', $data['soldeInitial'], 10000, MessageEnumFr::MIN);
@@ -49,7 +49,7 @@ class StoreCompteRequest extends FormRequest
                 }
 
                 CustomValidationRules::required($validator, 'client.nci', $data['client']['nci'], MessageEnumFr::REQUIRED);
-                self::$rules['isCNI']($validator, 'client.nci', $data['client']['nci']);
+                CustomValidationRules::isCNI($validator, 'client.nci', $data['client']['nci']);
                 CustomValidationRules::unique($validator, 'client.nci', $data['client']['nci'], 'clients', 'nci', MessageEnumFr::UNIQUE);
 
                 CustomValidationRules::required($validator, 'client.email', $data['client']['email'], MessageEnumFr::REQUIRED);
@@ -57,7 +57,7 @@ class StoreCompteRequest extends FormRequest
                 CustomValidationRules::unique($validator, 'client.email', $data['client']['email'], 'clients', 'email', MessageEnumFr::UNIQUE);
 
                 CustomValidationRules::required($validator, 'client.telephone', $data['client']['telephone'], MessageEnumFr::REQUIRED);
-                self::$rules['isSenegalPhone']($validator, 'client.telephone', $data['client']['telephone']);
+                CustomValidationRules::isSenegalPhone($validator, 'client.telephone', $data['client']['telephone']);
                 CustomValidationRules::unique($validator, 'client.telephone', $data['client']['telephone'], 'clients', 'telephone', MessageEnumFr::UNIQUE);
 
                 CustomValidationRules::required($validator, 'client.adresse', $data['client']['adresse'], MessageEnumFr::REQUIRED);

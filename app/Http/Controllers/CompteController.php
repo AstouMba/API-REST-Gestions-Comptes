@@ -20,8 +20,12 @@ use OpenApi\Annotations as OA;
  *     description="API for managing bank accounts"
  * )
  * @OA\Server(
- *     url="http://0.0.0.0:8020/api/v1/mbow.astou",
+ *     url="http://127.0.0.1:8000/api/v1/mbow.astou",
  *     description="Local server"
+ * )
+ * @OA\Server(
+ *     url="https://api-rest-gestions-comptes.onrender.com/mbow.astou/api/documentation",
+ *     description="Production server"
  * )
  * @OA\Schema(
  *     schema="Compte",
@@ -201,9 +205,9 @@ class CompteController extends Controller
      */
     public function store(StoreCompteRequest $request)
     {
-        $compte = $this->compteService->createCompte($request->validated());
+        $result = $this->compteService->createCompte($request->all());
 
-        return $this->successResponse(new CompteResource($compte), 'Compte créé avec succès', 201);
+        return $this->successResponse($result, 'Compte creation request submitted successfully', 202);
     }
 
     /**
