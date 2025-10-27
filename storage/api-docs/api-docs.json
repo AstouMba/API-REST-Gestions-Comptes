@@ -6,13 +6,14 @@
         "version": "1.0.0"
     },
     "servers": [
+       
+        {
+            "url": "https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
+            "description": "Production server"
+        }, 
         {
             "url": "http://127.0.0.1:8000/api/v1/mbow.astou",
             "description": "Local server"
-        },
-        {
-            "url": "https://api-rest-gestions-comptes.onrender.com/mbow.astou/api/documentation",
-            "description": "Production server"
         },
         {
             "url": ""
@@ -21,9 +22,12 @@
     "paths": {
         "/comptes": {
             "get": {
+                "tags": [
+                    "Comptes"
+                ],
                 "summary": "Lister tous les comptes",
-                "description": "Admin peut récupérer la liste de tous les comptes actifs. Client peut récupérer la liste de ses comptes actifs. Liste des comptes non supprimés de type cheque ou epargne actif.",
-                "operationId": "5fdb1d9d6a1e1d81e65a694d33a249c6",
+                "description": "Admin peut récupérer tous les comptes actifs. Client peut récupérer ses comptes actifs.",
+                "operationId": "8661524418e6a170221ceca51044f205",
                 "parameters": [
                     {
                         "name": "page",
@@ -115,12 +119,19 @@
                         }
                     }
                 },
-                "security": []
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
+                "tags": [
+                    "Comptes"
+                ],
                 "summary": "Créer un compte",
                 "description": "Créer un nouveau compte bancaire",
-                "operationId": "a896aedada2e34a114a6b2bda0468e82",
+                "operationId": "8b0f6ac3018cf0a79d214a1c9744d9de",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -227,9 +238,12 @@
         },
         "/comptes/{compteId}": {
             "get": {
-                "summary": "Récupération d’un compte via ID",
-                "description": "Admin peut récupérer n’importe quel compte via son ID. Client ne peut récupérer qu’un de ses propres comptes via son ID. Recherche d'abord en local, puis sur base serverless si introuvable.",
-                "operationId": "53eb952653f2afcba77ec73e86d8ee69",
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupération d'un compte via ID",
+                "description": "Admin peut récupérer n’importe quel compte via ID. Client ne peut récupérer qu’un de ses comptes.",
+                "operationId": "2dc97a14d98b84372fc48599476fa426",
                 "parameters": [
                     {
                         "name": "compteId",
@@ -457,6 +471,12 @@
             }
         }
     },
+    "tags": [
+        {
+            "name": "Comptes",
+            "description": "Opérations sur les comptes bancaires"
+        }
+    ],
     "security": [
         {
             "bearerAuth": []
