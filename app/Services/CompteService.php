@@ -135,4 +135,42 @@ class CompteService
         });
     }
 
+    public function updateCompte($user, $compteId, array $data)
+    {
+        return \DB::transaction(function () use ($user, $compteId, $data) {
+            $compte = $this->getCompteById($user, $compteId);
+
+            // Update titulaire if provided
+            if (isset($data['titulaire'])) {
+                $compte->client->update(['titulaire' => $data['titulaire']]);
+            }
+
+            // Update client informations if provided
+            if (isset($data['informationsClient'])) {
+                $clientData = [];
+                if (isset($data['informationsClient']['telephone'])) {
+                    $clientData['telephone'] = $data['informationsClient']['telephone'];
+                }
+                if (isset($data['informationsClient']['email'])) {
+                    $clientData['email'] = $data['informationsClient']['email'];
+                }
+                if (isset($data['informationsClient']['nci'])) {
+                    $clientData['nci'] = $data['informationsClient']['nci'];
+                }
+                if (!empty($clientData)) {
+                    $compte->client->update($clientData);
+                }
+
+                // Update password if provided
+                if (isset($data['informationsClient']['password'])) {
+                    $compte->client->utilisateur->update([
+                        'password' => Hash::make($data['informationsClient']['password'])
+                    ]);
+                }
+            }
+
+            return $compte->fresh();
+        });
+    }
+
 }

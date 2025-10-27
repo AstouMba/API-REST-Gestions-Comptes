@@ -6,6 +6,7 @@ use App\Http\Resources\CompteResource;
 use App\Services\CompteService;
 use App\Traits\ApiResponseTrait;
 use App\Http\Requests\StoreCompteRequest;
+use App\Http\Requests\UpdateCompteRequest;
 use App\Models\Compte;
 use App\Models\User;
 use App\Exceptions\CompteNotFoundException;
@@ -278,6 +279,74 @@ class CompteController extends Controller
         } catch (CompteNotFoundException $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Mettre à jour un compte
+     *
+     * @OA\Patch(
+     *     path="/comptes/{compteId}",
+     *     summary="Modification partielle d’un compte client",
+     *     description="Permettre la mise à jour partielle des informations du client lié à un compte existant. Tous les champs sont optionnels, mais au moins un champ doit être modifié.",
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior"),
+     *             @OA\Property(property="informationsClient", type="object",
+     *                 @OA\Property(property="telephone", type="string", example="+221771234568"),
+     *                 @OA\Property(property="email", type="string", example="amadou.diallo@example.com"),
+     *                 @OA\Property(property="password", type="string", example="newpassword123"),
+     *                 @OA\Property(property="nci", type="string", example="1234567890123")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Compte mis à jour avec succès",
+     *         @OA\JsonContent(ref="#/components/schemas/Compte")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Aucune donnée valide n’a été fournie",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="message", type="string", example="Aucune donnée valide n’a été fournie pour la mise à jour.")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="UNAUTHORIZED"),
+     *                 @OA\Property(property="message", type="string", example="Vous n'avez pas l'autorisation de modifier ce compte.")
+     *             )
+     *         )
+     *     ),
+     *     security={{"bearerAuth":{}}}
+     * )
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(UpdateCompteRequest $request, $compteId)
+    {
+        $user = $request->user();
+        $compte = $this->compteService->getCompteById($user, $compteId);
+
+        $this->authorize('update', $compte);
+
+        $compte = $this->compteService->updateCompte($user, $compteId, $request->validated());
+
+        return $this->successResponse(new CompteResource($compte), 'Compte mis à jour avec succès', 201);
     }
 
 }
