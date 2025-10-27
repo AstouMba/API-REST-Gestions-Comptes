@@ -36,6 +36,7 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
     && chmod -R 775 storage bootstrap/cache
 
 # # Créer un fichier .env minimal pour le build
+
 # RUN echo "APP_NAME=Laravel" > .env && \
 #     echo "APP_ENV=production" >> .env && \
 #     echo "APP_KEY=" >> .env && \
@@ -56,6 +57,7 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
 #     echo "SESSION_DRIVER=file" >> .env && \
 #     echo "QUEUE_CONNECTION=sync" >> .env && echo "" >> .env && \
 #     echo "API_NAME=mbow.astou" >> .env
+RUN echo "Generating .env from .env.production" >> .env  
 
 COPY .env.production .env
 
