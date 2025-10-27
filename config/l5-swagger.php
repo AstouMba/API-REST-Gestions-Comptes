@@ -19,7 +19,7 @@ return [
 
             'paths' => [
                 // chemins relatifs pour Swagger UI assets
-                'use_absolute_path' => false,
+                'use_absolute_path' => true,
                 'swagger_ui_assets_path' => 'vendor/swagger-api/swagger-ui/dist/',
                 
                 'docs' => storage_path('api-docs'),

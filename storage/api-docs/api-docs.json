@@ -6,146 +6,19 @@
         "version": "1.0.0"
     },
     "servers": [
-       
-        {
-            "url": "https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
-            "description": "Production server"
-        }, 
         {
             "url": "http://127.0.0.1:8000/api/v1/mbow.astou",
             "description": "Local server"
+        },
+        {
+            "url": "https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
+            "description": "Production server"
         },
         {
             "url": ""
         }
     ],
     "paths": {
-        "/comptes/{compteId}": {
-            "patch": {
-                "summary": "Modification partielle d’un compte client",
-                "description": "Permettre la mise à jour partielle des informations du client lié à un compte existant. Tous les champs sont optionnels, mais au moins un champ doit être modifié.",
-                "operationId": "updateCompte",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "titulaire": {
-                                        "type": "string",
-                                        "example": "Amadou Diallo Junior"
-                                    },
-                                    "informationsClient": {
-                                        "properties": {
-                                            "telephone": {
-                                                "type": "string",
-                                                "example": "+221771234568"
-                                            },
-                                            "email": {
-                                                "type": "string",
-                                                "example": "amadou.diallo@example.com"
-                                            },
-                                            "password": {
-                                                "type": "string",
-                                                "example": "newpassword123"
-                                            },
-                                            "nci": {
-                                                "type": "string",
-                                                "example": "1234567890123"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Compte mis à jour avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Compte"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Aucune donnée valide n’a été fournie",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "errors": {
-                                            "properties": {
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Aucune donnée valide n’a été fournie pour la mise à jour."
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Accès refusé",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "properties": {
-                                                "code": {
-                                                    "type": "string",
-                                                    "example": "UNAUTHORIZED"
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Vous n'avez pas l'autorisation de modifier ce compte."
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/comptes": {
             "get": {
                 "tags": [
