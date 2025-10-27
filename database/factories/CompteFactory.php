@@ -32,7 +32,7 @@ class CompteFactory extends Factory
               'numero' => 'CPT' . str_pad(fake()->unique()->numberBetween(1, 999999), 6, '0', STR_PAD_LEFT),
               'type' => $type,
               'statut' => $statut,
-              'devise' => 'XOF', // Franc CFA, devise du Sénégal
+              'devise' => 'FCFA', // Franc CFA, devise du Sénégal
           ];
 
         // Ajouter deleted_at pour quelques comptes (environ 10% pour tester les archives)

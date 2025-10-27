@@ -28,7 +28,7 @@ return [
                 'format_to_use_for_docs' => 'json',
 
                 'annotations' => [
-                    base_path('app'),
+                    app_path('Docs'),
                 ],
             ],
 
@@ -104,7 +104,7 @@ return [
         ],
 
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://127.0.0.1:8000'),
+            'L5_SWAGGER_CONST_HOST' => 'https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou',
         ],
     ],
 

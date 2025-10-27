@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'name' => env('API_NAME', 'default.name'),
+    'name' => env('API_NAME', 'mbow.astou'),
 ];
