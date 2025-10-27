@@ -24,7 +24,7 @@ use OpenApi\Annotations as OA;
  *     description="Local server"
  * )
  * @OA\Server(
- *     url="https://api-rest-gestions-comptes.onrender.com/mbow.astou/api/documentation",
+ *     url="https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
  *     description="Production server"
  * )
  * @OA\Schema(
