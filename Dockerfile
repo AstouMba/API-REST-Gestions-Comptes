@@ -61,7 +61,7 @@ RUN echo "APP_NAME=Laravel" > .env && \
 
 # Changer les permissions du fichier .env pour l'utilisateur laravel
 RUN chown laravel:laravel .env
-4
+
 # Générer la clé d'application et optimiser
 USER laravel
 RUN php artisan key:generate --force && \
