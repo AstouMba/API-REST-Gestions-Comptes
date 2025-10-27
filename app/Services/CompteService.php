@@ -3,87 +3,46 @@
 namespace App\Services;
 
 use App\Models\Compte;
-use App\Models\Client;
-use App\Models\User;
-use App\Models\Transaction;
-use App\Exceptions\NotFoundException;
-use App\Exceptions\ValidationException;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 class CompteService
 {
-    public function getAllComptes()
+    public function listComptes($user = null, $filters = [])
     {
-        return Compte::all();
-    }
+        $query = Compte::query();
 
-    public function getComptesByClient($clientId)
-    {
-        return Compte::where('client_id', $clientId)->get();
-    }
-    public function listComptes($user, array $filters = [])
-    {
-        $query = Compte::forUser($user);
-
-        // Apply filters
-        if (isset($filters['search'])) {
-            $query->search($filters['search']);
+        // Recherche par titulaire ou numéro
+        if (!empty($filters['search'])) {
+            $query->where('titulaire', 'like', '%'.$filters['search'].'%')
+                  ->orWhere('numeroCompte', 'like', '%'.$filters['search'].'%');
         }
 
-        // Sorting
+        // Filtrer par type de compte
+        if (!empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        // Tri
         $sort = $filters['sort'] ?? 'created_at';
         $order = $filters['order'] ?? 'desc';
-        $allowedSorts = ['created_at', 'solde', 'titulaire'];
-        if (in_array($sort, $allowedSorts)) {
-            $query->orderBy($sort, $order);
-        }
+        $query->orderBy($sort, $order);
 
         // Pagination
-        $limit = min($filters['limit'] ?? 10, 100);
-        $page = $filters['page'] ?? 1;
-        return $query->with(['transactions', 'client'])->paginate($limit, ['*'], 'page', $page);
-    }
+        $limit = $filters['limit'] ?? 10;
 
-
-    public function getCompteByNumero($user, $numero)
-    {
-        return Compte::forUser($user)->byNumero($numero)->first();
-    }
-
-    public function getCompteById($user, $compteId)
-    {
-        $query = Compte::forUser($user)->where('id', $compteId);
-
-        $compte = $query->first();
-
-        if ($compte) {
-            return $compte;
-        }
-
-        // If not found locally, simulate serverless search
-        // In a real scenario, this would query an external serverless database
-        // For now, throw exception if not found
-        throw new \App\Exceptions\CompteNotFoundException($compteId);
+        return $query->paginate($limit);
     }
 
     public function createCompte(array $data)
     {
-        // Log the data for debugging
-        \Log::info('Service data received', ['data' => $data]);
-
-        // Dispatch the job for asynchronous creation
-        \App\Jobs\CreateCompteJob::dispatch($data);
-
-        // Return a temporary response since it's asynchronous
-        return [
-            'message' => 'Compte creation request submitted. It will be processed in the background.',
-            'status' => 'pending'
-        ];
+        return Compte::create($data);
     }
 
+    public function getCompteById($user = null, $compteId)
+    {
+        $compte = Compte::find($compteId);
+        if (!$compte) {
+            throw new \Exception("Compte non trouvé");
+        }
+        return $compte;
+    }
 }

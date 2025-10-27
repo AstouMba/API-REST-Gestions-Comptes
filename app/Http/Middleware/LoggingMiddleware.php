@@ -18,6 +18,7 @@ class LoggingMiddleware
     {
         $response = $next($request);
 
+        $user = $request->user();
         $logData = [
             'date' => now()->toDateString(),
             'heure' => now()->toTimeString(),
@@ -25,6 +26,8 @@ class LoggingMiddleware
             'operation' => $request->method(),
             'ressource' => $request->path(),
             'status' => $response->getStatusCode(),
+            'utilisateur' => $user ? $user->login : 'anonymous',
+            'compteId' => $request->route('compteId') ?? null,
         ];
 
         Log::info('API Request', $logData);
