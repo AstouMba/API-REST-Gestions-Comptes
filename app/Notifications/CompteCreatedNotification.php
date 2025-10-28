@@ -2,8 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Services\MailService;
-use App\Services\SmsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,20 +10,18 @@ use Illuminate\Notifications\Notification;
 class CompteCreatedNotification extends Notification
 {
 
+    use Queueable;
+
     public $password;
     public $code;
-    protected $mailService;
-    protected $smsService;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($password, $code, MailService $mailService, SmsService $smsService)
+    public function __construct(?string $password, string $code)
     {
         $this->password = $password;
         $this->code = $code;
-        $this->mailService = $mailService;
-        $this->smsService = $smsService;
     }
 
     /**
@@ -41,15 +37,21 @@ class CompteCreatedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        $mail = (new MailMessage)
                     ->subject('Informations de connexion à votre compte')
-                    ->greeting('Bonjour ' . $notifiable->titulaire)
-                    ->line('Votre compte a été créé avec succès.')
-                    ->line('Voici vos informations de connexion :')
-                    ->line('Mot de passe : ' . $this->password)
-                    ->line('Veuillez utiliser ce mot de passe pour vous connecter.')
-                    ->action('Se connecter', url('/login'))
-                    ->line('Merci d\'utiliser notre service !');
+                    ->greeting('Bonjour ' . ($notifiable->titulaire ?? ''))
+                    ->line('Votre compte a été créé avec succès.');
+
+        if ($this->password) {
+            $mail->line('Voici vos informations de connexion :')
+                 ->line('Mot de passe : ' . $this->password)
+                 ->line('Veuillez utiliser ce mot de passe pour vous connecter.');
+        }
+
+        $mail->action('Se connecter', url('/login'))
+             ->line('Merci d\'utiliser notre service !');
+
+        return $mail;
     }
 
     /**
@@ -58,5 +60,13 @@ class CompteCreatedNotification extends Notification
     public function toSms(object $notifiable): string
     {
         return "Votre code de verification est: {$this->code}. Utilisez ce code lors de votre premiere connexion.";
+    }
+
+    /**
+     * Make this notification queueable.
+     */
+    public function shouldQueue()
+    {
+        return true;
     }
 }

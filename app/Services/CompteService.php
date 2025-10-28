@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Events\CompteCreated;
 use App\Models\Compte;
 use App\Models\CompteArchive;
+use App\Models\Client;
+use App\Models\User;
 use App\Http\Resources\CompteResource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -49,7 +53,101 @@ class CompteService
 
     public function createCompte(array $data)
     {
-        return Compte::create($data);
+        // Create client (if needed), user (if needed) and compte within a transaction.
+        return DB::transaction(function () use ($data) {
+            // Try to find existing client by id, telephone, email or nci
+            $client = null;
+            if (!empty($data['client_id'])) {
+                $client = Client::find($data['client_id']);
+            }
+            if (!$client && !empty($data['telephone'])) {
+                $client = Client::where('telephone', $data['telephone'])->first();
+            }
+            if (!$client && !empty($data['email'])) {
+                $client = Client::where('email', $data['email'])->first();
+            }
+            if (!$client && !empty($data['nci'])) {
+                $client = Client::where('nci', $data['nci'])->first();
+            }
+
+            $password = null;
+            $user = null;
+
+            // If client does not exist, create user + client
+            if (! $client) {
+                $password = Str::random(10);
+                $login = $data['telephone'] ?? $data['email'] ?? 'user' . Str::random(6);
+
+                $user = User::create([
+                    'id' => (string) Str::uuid(),
+                    'login' => $login,
+                    'password' => $password,
+                    'code' => null,
+                    'is_admin' => false,
+                ]);
+
+                $client = Client::create([
+                    'id' => (string) Str::uuid(),
+                    'utilisateur_id' => $user->id,
+                    'titulaire' => $data['titulaire'] ?? ($data['client']['titulaire'] ?? null),
+                    'email' => $data['email'] ?? ($data['client']['email'] ?? null),
+                    'adresse' => $data['adresse'] ?? null,
+                    'telephone' => $data['telephone'] ?? null,
+                    'nci' => $data['nci'] ?? null,
+                ]);
+            } else {
+                // Client exists: ensure user exists
+                $user = $client->utilisateur;
+                if (! $user) {
+                    $password = Str::random(10);
+                    $login = $client->telephone ?? $client->email ?? 'user' . Str::random(6);
+                    $user = User::create([
+                        'id' => (string) Str::uuid(),
+                        'login' => $login,
+                        'password' => $password,
+                        'code' => null,
+                        'is_admin' => false,
+                    ]);
+                    $client->utilisateur_id = $user->id;
+                    $client->save();
+                }
+            }
+
+            // Create the compte
+            $compte = Compte::create([
+                'id' => (string) Str::uuid(),
+                'client_id' => $client->id,
+                'type' => $data['type'] ?? 'cheque',
+                'statut' => $data['statut'] ?? 'actif',
+                'devise' => $data['devise'] ?? 'FCFA',
+            ]);
+
+            // Create initial deposit transaction if soldeInitial is provided
+            if (isset($data['soldeInitial']) && is_numeric($data['soldeInitial'])) {
+                $compte->depots()->create([
+                    'id' => (string) Str::uuid(),
+                    'montant' => $data['soldeInitial'],
+                    'type' => 'depot',
+                    'description' => 'Solde initial',
+                ]);
+            }
+
+            // Generate a verification code and store on user
+            $code = (string) random_int(100000, 999999);
+            if ($user) {
+                $user->code = $code;
+                $user->save();
+            }
+
+            // Dispatch event to send notifications (mail + sms)
+            try {
+                event(new CompteCreated($compte, $client, $password, $code));
+            } catch (\Exception $e) {
+                Log::error('Failed to dispatch CompteCreated event: ' . $e->getMessage());
+            }
+
+            return $compte;
+        });
     }
 
     public function getCompteById(string $id): ?Compte
@@ -128,7 +226,7 @@ class CompteService
      * @return array
      * @throws \Exception
      */
-    public function deleteCompte(string $compteId, Request $request = null): array
+    public function deleteCompte(string $compteId, ?Request $request = null): array
     {
         $compte = Compte::withoutGlobalScopes()->with('client')->find($compteId);
         if (! $compte) {
