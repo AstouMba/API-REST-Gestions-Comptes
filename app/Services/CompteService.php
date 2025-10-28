@@ -3,6 +3,12 @@
 namespace App\Services;
 
 use App\Models\Compte;
+use App\Models\CompteArchive;
+use App\Http\Resources\CompteResource;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class CompteService
 {
@@ -10,24 +16,33 @@ class CompteService
     {
         $query = Compte::query();
 
-        // Recherche par titulaire ou numéro
-        if (!empty($filters['search'])) {
-            $query->where('titulaire', 'like', '%'.$filters['search'].'%')
-                  ->orWhere('numeroCompte', 'like', '%'.$filters['search'].'%');
+        // Apply user scope (for admin / client) if available
+        if (method_exists(Compte::class, 'scopeForUser')) {
+            $query = $query->forUser($user);
         }
 
-        // Filtrer par type de compte
-        if (!empty($filters['type'])) {
-            $query->where('type', $filters['type']);
+        // Apply search scope if provided
+        if (!empty($filters['search']) && method_exists(Compte::class, 'scopeSearch')) {
+            $query = $query->search($filters['search']);
         }
 
-        // Tri
+        // Apply type scope if provided
+        if (!empty($filters['type']) && method_exists(Compte::class, 'scopeType')) {
+            $query = $query->type($filters['type']);
+        }
+
+        // Sorting
+        $allowedSorts = ['created_at', 'numero', 'titulaire', 'solde'];
         $sort = $filters['sort'] ?? 'created_at';
-        $order = $filters['order'] ?? 'desc';
-        $query->orderBy($sort, $order);
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'created_at';
+        }
+        $order = strtolower($filters['order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $query = $query->orderBy($sort, $order);
 
         // Pagination
-        $limit = $filters['limit'] ?? 10;
+        $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int) $filters['limit'] : 10;
 
         return $query->paginate($limit);
     }
@@ -43,7 +58,146 @@ class CompteService
         return Compte::withoutGlobalScopes()->find($id);
     }
 
-    public function updateCompte($user = null, $compteId, array $data)
+    /**
+     * Retourne un payload uniforme pour un compte, qu'il soit actif (local) ou archivé (neon).
+     * Renvoie null si le compte n'existe ni localement (actif/trashed) ni dans les archives.
+     *
+     * @param string $compteId
+     * @return array|null
+     */
+    public function getComptePayload(string $compteId): ?array
+    {
+        // Try active local account (global scopes apply)
+        $localActive = Compte::with(['client', 'depots', 'retraits'])->find($compteId);
+        if ($localActive) {
+            // Use resource to build standard payload
+            $payload = (new CompteResource($localActive))->toArray(request());
+            return $payload;
+        }
+
+        // Try neon archive
+        try {
+            $archive = CompteArchive::find($compteId);
+        } catch (\Exception $e) {
+            Log::warning('Neon archive lookup failed for compte '.$compteId.': '.$e->getMessage());
+            $archive = null;
+        }
+
+        if ($archive) {
+            // normalize metadata
+            $meta = $archive->metadata ?? null;
+            if (is_string($meta)) {
+                $decoded = json_decode($meta, true);
+                $meta = $decoded === null ? null : $decoded;
+            } elseif (!is_array($meta)) {
+                $meta = null;
+            }
+
+            $payload = [
+                'id' => $archive->id,
+                'numeroCompte' => $archive->numero ?? $archive->numeroCompte ?? null,
+                'titulaire' => $archive->titulaire ?? null,
+                'type' => $archive->type ?? null,
+                'solde' => $archive->solde ?? 0,
+                'devise' => $archive->devise ?? 'FCFA',
+                'dateCreation' => isset($archive->datecreation) ? (Carbon::parse($archive->datecreation)->toISOString()) : (isset($archive->created_at) ? (string)$archive->created_at : null),
+                'statut' => $archive->statut ?? 'ferme',
+                'motifBlocage' => $archive->motifBlocage ?? null,
+                'metadata' => $meta,
+            ];
+
+            return $payload;
+        }
+
+        // Final: check if exists locally (trashed/closed)
+        $localAny = Compte::withoutGlobalScopes()->withTrashed()->with('client')->find($compteId);
+        if ($localAny) {
+            // present locally but not active and not archived -> return null to let caller handle
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Soft-delete local compte and archive it to Neon.
+     * Returns the response payload to return to client.
+     *
+     * @param string $compteId
+     * @param Request|null $request
+     * @return array
+     * @throws \Exception
+     */
+    public function deleteCompte(string $compteId, Request $request = null): array
+    {
+        $compte = Compte::withoutGlobalScopes()->with('client')->find($compteId);
+        if (! $compte) {
+            throw new \Exception('Compte non trouvé');
+        }
+
+        $closureTime = Carbon::now();
+
+        DB::beginTransaction();
+        try {
+            // Update status
+            $compte->statut = 'ferme';
+            if (in_array('dateFermeture', $compte->getFillable()) || array_key_exists('dateFermeture', $compte->getAttributes())) {
+                $compte->dateFermeture = $closureTime;
+            }
+            $compte->save();
+
+            // Prepare archive data
+            $user = $request ? $request->user() : null;
+            $archivedBy = $user->name ?? $user->id ?? null;
+            if (! $archivedBy && $request) {
+                $archivedBy = $request->header('X-User-Name') ?? $request->header('X-User-Id') ?? 'system';
+            }
+
+            $archiveData = [
+                'id' => $compte->id,
+                'numero' => $compte->numero,
+                'titulaire' => optional($compte->client)->titulaire ?? null,
+                'type' => $compte->type ?? null,
+                'solde' => $compte->solde ?? 0,
+                'devise' => $compte->devise ?? 'FCFA',
+                'statut' => 'ferme',
+                'datecreation' => $compte->created_at ?? null,
+                'datefermeture' => $closureTime,
+                'metadata' => json_encode([
+                    'archivedBy' => $archivedBy ?? 'system',
+                    'archivedAt' => $closureTime->toIso8601String(),
+                    'ip' => $request ? $request->ip() : null,
+                ]),
+            ];
+
+            // Try to create archive on neon (failures are logged but do not block deletion)
+            try {
+                CompteArchive::create($archiveData);
+                Log::info('Compte archived to neon', ['compte' => $compte->id, 'by' => $archivedBy]);
+            } catch (\Exception $e) {
+                Log::error('Failed to archive compte '.$compteId.' to neon: '.$e->getMessage());
+            }
+
+            // Soft delete local
+            $compte->delete();
+
+            DB::commit();
+
+            return [
+                'id' => $compte->id,
+                'numero' => $compte->numero,
+                'statut' => 'ferme',
+                'dateFermeture' => $closureTime->toIso8601String(),
+                'archive' => true,
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error while deleting compte '.$compteId.': '.$e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function updateCompte(string $compteId, array $data, $user = null)
     {
         $compte = Compte::with('client.utilisateur')->find($compteId);
         if (!$compte) {

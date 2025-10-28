@@ -23,6 +23,7 @@ Route::middleware(['api', 'logging'])->group(function () {
             Route::get('comptes/{compteId}', [CompteController::class, 'show'])->name('comptes.show');
             Route::post('comptes', [CompteController::class, 'store'])->name('comptes.store');
             Route::patch('comptes/{compteId}', [CompteController::class, 'update'])->name('comptes.update');
+            Route::delete('comptes/{compteId}', [CompteController::class, 'destroy'])->name('comptes.destroy');
         });
 });
 

@@ -187,5 +187,51 @@ use OpenApi\Annotations as OA;
  *     ),
  *     security={{"bearerAuth":{}}}
  * )
+
+ * @OA\Delete(
+ *     path="/comptes/{compteId}",
+ *     summary="Supprimer un compte (Soft Delete + Archivage)",
+ *     description="Supprime (soft-delete) un compte localement et archive ses données dans la base Neon.",
+ *     tags={"Comptes"},
+ *     @OA\Parameter(
+ *         name="compteId",
+ *         in="path",
+ *         description="ID du compte à supprimer",
+ *         required=true,
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Compte supprimé et archivé avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Compte supprimé et archivé avec succès"),
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="id", type="string", example="550e8400-e29b-41d4-a716-446655440000"),
+ *                 @OA\Property(property="numero", type="string", example="C00123456"),
+ *                 @OA\Property(property="statut", type="string", example="ferme"),
+ *                 @OA\Property(property="dateFermeture", type="string", format="date-time", example="2025-10-19T11:15:00Z"),
+ *                 @OA\Property(property="archive", type="boolean", example=true)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Compte introuvable",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(property="message", type="string", example="Compte introuvable")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur lors de la suppression du compte",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(property="message", type="string", example="Erreur lors de la suppression du compte")
+ *         )
+ *     ),
+ *     security={{"bearerAuth":{}}}
+ * )
  */
 class CompteApi {}

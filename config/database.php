@@ -78,6 +78,21 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        // Neon serverless archive database connection
+        'neon' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_NEON_HOST'),
+            'port' => env('DB_NEON_PORT', '5432'),
+            'database' => env('DB_NEON_DATABASE'),
+            'username' => env('DB_NEON_USERNAME'),
+            'password' => env('DB_NEON_PASSWORD'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => env('DB_NEON_SCHEMA', 'public'),
+            'sslmode' => env('DB_NEON_SSLMODE', 'require'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),
