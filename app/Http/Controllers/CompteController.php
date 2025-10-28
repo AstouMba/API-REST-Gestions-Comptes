@@ -10,6 +10,7 @@ use App\Enums\MessageEnumFr;
 use Illuminate\Http\Request;
 use App\Http\Requests\UpdateCompteRequest;
 
+
 class CompteController extends Controller
 {
     use ApiResponseTrait;
@@ -26,8 +27,8 @@ class CompteController extends Controller
     {
         $filters = $this->getFilters($request);
 
-        // Appel du service sans utilisateur
-        $comptes = $this->compteService->listComptes(null, $filters);
+        // Appel du service en passant l'utilisateur (le scope ForUser gérera l'accès)
+        $comptes = $this->compteService->listComptes($request->user(), $filters);
 
         $formatted = $this->formatPagination($request, $comptes);
 
@@ -42,12 +43,13 @@ class CompteController extends Controller
 
     public function show(Request $request, $compteId)
     {
-        try {
-            $compte = $this->compteService->getCompteById(null, $compteId);
-            return $this->successResponse(new CompteResource($compte), MessageEnumFr::COMPTE_RETRIEVED, 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), 404);
+        $payload = $this->compteService->getComptePayload($compteId);
+
+        if ($payload === null) {
+            return $this->errorResponse(MessageEnumFr::COMPTE_NOT_FOUND, 404);
         }
+
+        return $this->successResponse($payload, MessageEnumFr::COMPTE_RETRIEVED, 200);
     }
 
     public function store(Request $request)
@@ -59,10 +61,26 @@ class CompteController extends Controller
     public function update(UpdateCompteRequest $request, $compteId)
     {
         try {
-            $result = $this->compteService->updateCompte($request->user(), $compteId, $request->validated());
-            return $this->successResponse(new CompteResource($result), 'Compte mis à jour avec succès', 201);
+            $result = $this->compteService->updateCompte($compteId, $request->validated(), $request->user());
+            return $this->successResponse(new CompteResource($result), MessageEnumFr::COMPTE_UPDATED, 201);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Soft delete the compte locally and archive it to Neon.
+     */
+    public function destroy(Request $request, $compteId)
+    {
+        try {
+            $result = $this->compteService->deleteCompte($compteId, $request);
+            return $this->successResponse($result, MessageEnumFr::COMPTE_DELETED_ARCHIVED, 200);
+        } catch (\Exception $e) {
+            if ($e->getMessage() === 'Compte non trouvé') {
+                return $this->errorResponse(MessageEnumFr::COMPTE_NOT_FOUND, 404);
+            }
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 }

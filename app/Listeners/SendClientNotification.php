@@ -4,21 +4,16 @@ namespace App\Listeners;
 
 use App\Events\CompteCreated;
 use App\Notifications\CompteCreatedNotification;
-use App\Services\MailService;
-use App\Services\SmsService;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendClientNotification
+class SendClientNotification implements ShouldQueue
 {
-    protected $mailService;
-    protected $smsService;
-
     /**
      * Create the event listener.
      */
-    public function __construct(MailService $mailService, SmsService $smsService)
+    public function __construct()
     {
-        $this->mailService = $mailService;
-        $this->smsService = $smsService;
+        // No services injected here to keep the listener serializable if queued.
     }
 
     /**
@@ -26,7 +21,7 @@ class SendClientNotification
      */
     public function handle(CompteCreated $event): void
     {
-        // Send notification via email and SMS
-        $event->client->notify(new CompteCreatedNotification($event->password, $event->code, $this->mailService, $this->smsService));
+    // Send notification via email and SMS. The notification is queueable and contains only primitives.
+    $event->client->notify(new CompteCreatedNotification($event->password, $event->code));
     }
 }

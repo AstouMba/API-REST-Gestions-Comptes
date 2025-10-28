@@ -110,4 +110,13 @@ class Compte extends Model
         }
     }
 
+    /**
+     * Scope pour la suppression de compte
+     * Permet la suppression sans authentification
+     */
+    public function scopeCanDelete($query)
+    {
+        return $query;
+    }
+
 }

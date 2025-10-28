@@ -27,4 +27,8 @@ class MessageEnumFr
     const ERROR_VALIDATION = 'VALIDATION_ERROR';
     const ERROR_USER_NOT_FOUND = 'USER_NOT_FOUND';
     const ERROR_COMPTE_NOT_FOUND = 'COMPTE_NOT_FOUND';
+    // Human-friendly messages
+    const COMPTE_NOT_FOUND = 'Compte introuvable';
+    const COMPTE_UPDATED = 'Compte mis à jour avec succès'; 
+    const COMPTE_DELETED_ARCHIVED = 'Compte supprimé et archivé avec succès';
 }
