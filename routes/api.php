@@ -22,6 +22,7 @@ Route::middleware(['api', 'logging'])->group(function () {
             Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
             Route::get('comptes/{compteId}', [CompteController::class, 'show'])->name('comptes.show');
             Route::post('comptes', [CompteController::class, 'store'])->name('comptes.store');
+            Route::patch('comptes/{compteId}', [CompteController::class, 'update'])->name('comptes.update');
         });
 });
 

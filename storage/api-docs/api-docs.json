@@ -338,6 +338,111 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "patch": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Mettre à jour partiellement un compte et ses informations client",
+                "description": "Met à jour partiellement le titulaire et/ou les informations du client associées au compte.",
+                "operationId": "1dc395a8f3d5d0427dd300bf220d7095",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "titulaire": {
+                                        "type": "string",
+                                        "example": "Amadou Diallo Junior"
+                                    },
+                                    "informationsClient": {
+                                        "properties": {
+                                            "telephone": {
+                                                "type": "string",
+                                                "example": "+221771234568"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "amadou.jr@example.com"
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "example": "newsecret123"
+                                            },
+                                            "nci": {
+                                                "type": "string",
+                                                "example": "1234567890123"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte mis à jour avec succès"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         }
     },

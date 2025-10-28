@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use App\Enums\MessageEnumFr;
 
 class NciRule implements ValidationRule
 {
@@ -16,7 +17,7 @@ class NciRule implements ValidationRule
     {
         // Vérifier si c'est un nombre et exactement 13 chiffres
         if (!is_numeric($value) || strlen((string)$value) !== 13) {
-            $fail('Le :attribute doit être un numéro de 13 chiffres.');
+            $fail(MessageEnumFr::ISCNI);
             return;
         }
         
@@ -29,7 +30,7 @@ class NciRule implements ValidationRule
             }
         }
         if ($isRepetitive) {
-            $fail('Le :attribute semble invalide (séquence répétitive).');
+            $fail(MessageEnumFr::ISCNI);
             return;
         }
         
@@ -43,7 +44,7 @@ class NciRule implements ValidationRule
             }
         }
         if ($isSequential) {
-            $fail('Le :attribute semble invalide (séquence séquentielle).');
+            $fail(MessageEnumFr::ISCNI);
         }
     }
 }

@@ -2,91 +2,92 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Client;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Compte;
 use App\Rules\TelephoneSenegalRule;
 use App\Rules\NciRule;
-use App\Models\Compte;
+use App\Enums\MessageEnumFr;
 
 class UpdateCompteRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
+        // Autorisation désactivée temporairement jusqu'à l'implémentation de l'authentification
         return true;
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     */
-    public function rules(): array
+    }    public function rules(): array
     {
-        $compte = Compte::find($this->route('compteId'));
-        $clientId = $compte ? $compte->client_id : null;
+        $compteId = $this->route('compteId');
+        $clientId = null;
+        if ($compteId) {
+            $compte = Compte::with('client')->find($compteId);
+            $clientId = $compte && $compte->client ? $compte->client->id : null;
+        }
 
         return [
-            'titulaire' => 'sometimes|string|max:255',
-            'informationsClient' => 'sometimes|array',
+            'titulaire' => ['sometimes', 'string'],
+            'informationsClient' => ['sometimes', 'array'],
             'informationsClient.telephone' => [
                 'sometimes',
+                'nullable',
                 'string',
                 new TelephoneSenegalRule(),
-                Rule::unique('clients', 'telephone')->ignore($clientId)
+                $clientId ? Rule::unique('clients', 'telephone')->ignore($clientId) : 'unique:clients,telephone'
             ],
             'informationsClient.email' => [
                 'sometimes',
+                'nullable',
                 'email',
-                Rule::unique('clients', 'email')->ignore($clientId)
+                $clientId ? Rule::unique('clients', 'email')->ignore($clientId) : 'unique:clients,email'
             ],
-            'informationsClient.password' => 'sometimes|string|min:8',
+            'informationsClient.password' => ['sometimes', 'nullable', 'string', 'min:8'],
             'informationsClient.nci' => [
                 'sometimes',
+                'nullable',
                 'string',
-                'regex:/^\d{13}$/',
-                Rule::unique('clients', 'nci')->ignore($clientId)
+                new NciRule(),
+                $clientId ? Rule::unique('clients', 'nci')->ignore($clientId) : 'unique:clients,nci'
             ],
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
-    public function messages(): array
-    {
-        return [
-            'titulaire.string' => 'Le titulaire doit être une chaîne de caractères.',
-            'titulaire.max' => 'Le titulaire ne peut pas dépasser 255 caractères.',
-            'informationsClient.array' => 'Les informations client doivent être un tableau.',
-            'informationsClient.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
-            'informationsClient.email.email' => 'L\'email doit être valide.',
-            'informationsClient.email.unique' => 'Cette adresse e-mail est déjà utilisée.',
-            'informationsClient.password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-            'informationsClient.nci.regex' => 'Le NCI doit être composé de 13 chiffres.',
-            'informationsClient.nci.unique' => 'Ce NCI est déjà utilisé.',
-        ];
-    }
-
-    /**
-     * Configure the validator instance.
-     */
-    protected function withValidator($validator)
+    public function withValidator($validator)
     {
         $validator->after(function ($validator) {
             $data = $this->all();
 
-            // Check if at least one field is provided
-            $hasTitulaire = isset($data['titulaire']) && !empty($data['titulaire']);
-            $hasClientInfo = isset($data['informationsClient']) && is_array($data['informationsClient']) &&
-                             (isset($data['informationsClient']['telephone']) && !empty($data['informationsClient']['telephone']) ||
-                              isset($data['informationsClient']['email']) && !empty($data['informationsClient']['email']) ||
-                              isset($data['informationsClient']['password']) && !empty($data['informationsClient']['password']) ||
-                              isset($data['informationsClient']['nci']) && !empty($data['informationsClient']['nci']));
+            // Vérifie si le champ titulaire existe et n'est pas vide
+            $hasTitulaire = isset($data['titulaire']) && !empty(trim($data['titulaire']));
+            
+            // Vérifie les informations client
+            $hasInfoField = false;
+            if (isset($data['informationsClient']) && is_array($data['informationsClient'])) {
+                foreach (['telephone', 'email', 'password', 'nci'] as $field) {
+                    if (isset($data['informationsClient'][$field]) && !empty(trim($data['informationsClient'][$field]))) {
+                        $hasInfoField = true;
+                        break;
+                    }
+                }
+            }
 
-            if (!$hasTitulaire && !$hasClientInfo) {
-                $validator->errors()->add('general', 'Vous devez renseigner au moins un champ pour effectuer une modification.');
+            // Si aucun champ n'est fourni ou tous les champs sont vides
+            if (!$hasTitulaire && !$hasInfoField) {
+                $msg = 'Vous devez renseigner au moins un champ pour effectuer une modification.';
+                $validator->errors()->add('general', $msg);
             }
         });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'informationsClient.telephone' => MessageEnumFr::ISSENEGALPHONE,
+            'informationsClient.telephone.unique' => MessageEnumFr::UNIQUE,
+            'informationsClient.email.email' => MessageEnumFr::ISEMAIL,
+            'informationsClient.email.unique' => MessageEnumFr::UNIQUE,
+            'informationsClient.password.min' => MessageEnumFr::MINLENGTH,
+            'informationsClient.nci' => MessageEnumFr::ISCNI,
+        ];
     }
 }

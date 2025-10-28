@@ -8,6 +8,7 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\PaginationTrait;
 use App\Enums\MessageEnumFr;
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateCompteRequest;
 
 class CompteController extends Controller
 {
@@ -53,5 +54,15 @@ class CompteController extends Controller
     {
         $result = $this->compteService->createCompte($request->all());
         return $this->successResponse($result, MessageEnumFr::COMPTE_CREATED, 202);
+    }
+
+    public function update(UpdateCompteRequest $request, $compteId)
+    {
+        try {
+            $result = $this->compteService->updateCompte($request->user(), $compteId, $request->validated());
+            return $this->successResponse(new CompteResource($result), 'Compte mis à jour avec succès', 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
+        }
     }
 }

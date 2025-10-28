@@ -144,5 +144,48 @@ use OpenApi\Annotations as OA;
  *     ),
  *     security={{"bearerAuth":{}}}
  * )
+ * @OA\Patch(
+ *     path="/comptes/{compteId}",
+ *     summary="Mettre à jour partiellement un compte et ses informations client",
+ *     description="Met à jour partiellement le titulaire et/ou les informations du client associées au compte.",
+ *     tags={"Comptes"},
+ *     @OA\Parameter(
+ *         name="compteId",
+ *         in="path",
+ *         description="ID du compte",
+ *         required=true,
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="titulaire", type="string", example="Amadou Diallo Junior"),
+ *             @OA\Property(property="informationsClient", type="object",
+ *                 @OA\Property(property="telephone", type="string", example="+221771234568"),
+ *                 @OA\Property(property="email", type="string", example="amadou.jr@example.com"),
+ *                 @OA\Property(property="password", type="string", example="newsecret123"),
+ *                 @OA\Property(property="nci", type="string", example="1234567890123")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Compte mis à jour avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Compte mis à jour avec succès"),
+ *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=422,
+ *         description="Données invalides",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=false),
+ *             @OA\Property(property="error", type="object")
+ *         )
+ *     ),
+ *     security={{"bearerAuth":{}}}
+ * )
  */
 class CompteApi {}

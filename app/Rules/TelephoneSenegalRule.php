@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use App\Enums\MessageEnumFr;
 
 class TelephoneSenegalRule implements ValidationRule
 {
@@ -16,20 +17,20 @@ class TelephoneSenegalRule implements ValidationRule
     {
         // Vérifier que le numéro commence par +221
         if (!str_starts_with($value, '+221')) {
-            $fail('Le :attribute doit commencer par +221.');
+            $fail(MessageEnumFr::ISSENEGALPHONE);
             return;
         }
         
         // Vérifier la longueur totale (13 caractères)
         if (strlen($value) !== 13) {
-            $fail('Le :attribute doit contenir exactement 13 caractères.');
+            $fail(MessageEnumFr::ISSENEGALPHONE);
             return;
         }
         
         // Vérifier que les 9 derniers caractères sont des chiffres
         $digits = substr($value, 4);
         if (!is_numeric($digits)) {
-            $fail('Le :attribute doit contenir uniquement des chiffres après +221.');
+            $fail(MessageEnumFr::ISSENEGALPHONE);
             return;
         }
         
@@ -42,7 +43,7 @@ class TelephoneSenegalRule implements ValidationRule
             }
         }
         if ($isRepetitive) {
-            $fail('Le :attribute semble invalide (séquence répétitive).');
+            $fail(MessageEnumFr::ISSENEGALPHONE);
             return;
         }
         
@@ -51,7 +52,7 @@ class TelephoneSenegalRule implements ValidationRule
         $prefix = substr($digits, 0, 2);
         
         if (!in_array($prefix, $validPrefixes)) {
-            $fail('Le :attribute doit avoir un préfixe mobile valide (70, 75, 76, 77, 78).');
+            $fail(MessageEnumFr::ISSENEGALPHONE);
         }
     }
 }
