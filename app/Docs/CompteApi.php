@@ -110,13 +110,7 @@ use OpenApi\Annotations as OA;
  *         description="ID du compte",
  *         required=true,
  *         @OA\Schema(type="string")
- *     ),
- *     @OA\Parameter(
- *         name="user_id",
- *         in="query",
- *         description="ID de l'utilisateur",
- *         required=true,
- *         @OA\Schema(type="string")
+ *     
  *     ),
  *     @OA\Response(
  *         response=200,
