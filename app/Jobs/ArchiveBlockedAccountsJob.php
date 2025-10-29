@@ -25,6 +25,8 @@ class ArchiveBlockedAccountsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        //
+        // Archiver quotidiennement les comptes bloqués dont l'archivage est requis
+        $service = app(\App\Services\CompteBlockageService::class);
+        $service->bloquerComptesEchus();
     }
 }

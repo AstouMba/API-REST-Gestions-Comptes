@@ -12,6 +12,23 @@ class TransactionSeeder extends Seeder
      */
     public function run(): void
     {
-      Transaction::factory(50)->create();
+        // Pour chaque compte, créer entre 5 et 15 transactions
+        \App\Models\Compte::all()->each(function ($compte) {
+            // Transactions de dépôt (60% de chances)
+            $nbDepots = fake()->numberBetween(3, 10);
+            Transaction::factory($nbDepots)->create([
+                'compte_id' => $compte->id,
+                'type' => 'depot',
+                'montant' => fake()->numberBetween(50000, 2000000)
+            ]);
+
+            // Transactions de retrait (40% de chances, et montants plus petits)
+            $nbRetraits = fake()->numberBetween(2, 5);
+            Transaction::factory($nbRetraits)->create([
+                'compte_id' => $compte->id,
+                'type' => 'retrait',
+                'montant' => fake()->numberBetween(10000, 500000)
+            ]);
+        });
     }
 }

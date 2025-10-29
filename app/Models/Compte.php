@@ -20,20 +20,20 @@ class Compte extends Model
         'type',
         'statut',
         'devise',
-        'motifBlocage',
+        'motif_blocage',
+        'date_blocage',
+        'date_deblocage_prevue'
     ];
 
     protected $casts = [
         'deleted_at' => 'datetime',
     ];
 
-    protected static function booted()
+    public function scopeActifs($query)
     {
-        static::addGlobalScope('activeAccounts', function ($query) {
-            $query->whereNull('deleted_at')
-                  ->whereIn('type', ['cheque', 'epargne'])
-                  ->where('statut', 'actif');
-        });
+        return $query->whereNull('deleted_at')
+                    ->whereIn('type', ['cheque', 'epargne'])
+                    ->where('statut', 'actif');
     }
 
     public function client()

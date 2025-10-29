@@ -25,6 +25,8 @@ class ProcessScheduledAccountBlockingJob implements ShouldQueue
      */
     public function handle(): void
     {
-        //
+        // Exécute la logique qui bloque et archive les comptes dont la date de blocage est échue
+        $service = app(\App\Services\CompteBlockageService::class);
+        $service->bloquerComptesEchus();
     }
 }

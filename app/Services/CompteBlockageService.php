@@ -17,20 +17,28 @@ class CompteBlockageService
             throw new \InvalidArgumentException('Seuls les comptes épargne peuvent être bloqués');
         }
 
+        // date_debut is the planned start of the blocking
         $dateBase = $dateDebut ? Carbon::parse($dateDebut) : Carbon::now();
-        
-        $dateBlocage = match($unite) {
-            'jours' => $dateBase->addDays($duree),
-            'mois' => $dateBase->addMonths($duree),
-            'annees' => $dateBase->addYears($duree),
+
+        // The planned date of block is the provided dateBase (date_debut)
+        $dateBlocage = $dateBase->copy();
+
+        // The expected unblock date is date_debut + duration according to the unit
+        $dateDeblocagePrevue = match ($unite) {
+            'jours' => $dateBase->copy()->addDays($duree),
+            'mois' => $dateBase->copy()->addMonths($duree),
+            'annees' => $dateBase->copy()->addYears($duree),
             default => throw new \InvalidArgumentException('Unité de temps invalide. Utilisez: jours, mois ou annees')
         };
 
         $compte->update([
             'motif_blocage' => $motif,
             'date_blocage' => $dateBlocage,
-            'date_deblocage_prevue' => $dateBlocage->copy()->addMonths(6),
+            'date_deblocage_prevue' => $dateDeblocagePrevue,
         ]);
+
+        // Ensure the passed model instance contains the latest attributes
+        $compte->refresh();
     }
 
     /**

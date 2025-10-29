@@ -25,6 +25,8 @@ class UnarchiveAccountsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        //
+        // Restaurer quotidiennement les comptes dont la date de déblocage est échue
+        $service = app(\App\Services\CompteBlockageService::class);
+        $service->debloquerComptesEchus();
     }
 }
