@@ -25,5 +25,10 @@ use OpenApi\Annotations as OA;
  *     name="Comptes",
  *     description="Opérations sur les comptes bancaires"
  * )
+ * 
+ * @OA\Tag(
+ *     name="Comptes - Blocage",
+ *     description="Opérations de blocage et déblocage des comptes"
+ * )
  */
 class OpenApiInfo {}

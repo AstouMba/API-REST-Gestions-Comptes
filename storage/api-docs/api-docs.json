@@ -556,6 +556,223 @@
                     }
                 ]
             }
+        },
+        "/comptes/{compteId}/bloquer": {
+            "post": {
+                "tags": [
+                    "Comptes - Blocage"
+                ],
+                "summary": "Planifier le blocage d'un compte épargne",
+                "description": "Planifie le blocage futur d'un compte épargne avec une date de déblocage automatique",
+                "operationId": "9b8102c21498d6b98963ac63c009da95",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte à bloquer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "motif",
+                                    "duree",
+                                    "unite"
+                                ],
+                                "properties": {
+                                    "motif": {
+                                        "type": "string",
+                                        "example": "Maintenance programmée"
+                                    },
+                                    "duree": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "unite": {
+                                        "type": "string",
+                                        "enum": [
+                                            "jours",
+                                            "mois",
+                                            "annees"
+                                        ],
+                                        "example": "mois"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Blocage programmé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Blocage du compte programmé"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "statut": {
+                                                    "type": "string"
+                                                },
+                                                "motifBlocage": {
+                                                    "type": "string"
+                                                },
+                                                "dateBlocagePrevue": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "dateDeblocagePrevue": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "note": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation ou compte non éligible au blocage",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Seuls les comptes épargne peuvent être bloqués"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/comptes/{compteId}/debloquer": {
+            "post": {
+                "tags": [
+                    "Comptes - Blocage"
+                ],
+                "summary": "Débloquer un compte épargne",
+                "description": "Débloque un compte épargne et restaure ses données depuis l'archive Neon si nécessaire",
+                "operationId": "7fe243ca12d1b828ca724af39eb5860c",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte à débloquer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte débloqué avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte débloqué avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "actif"
+                                                },
+                                                "dateDeblocage": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Compte non éligible au déblocage",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ce compte n'est pas bloqué"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -593,11 +810,27 @@
                     },
                     "statut": {
                         "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ],
                         "example": "bloque"
                     },
                     "motifBlocage": {
                         "type": "string",
-                        "example": "Inactivité de 30+ jours"
+                        "example": "Maintenance programmée",
+                        "nullable": true
+                    },
+                    "dateBlocage": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "dateDeblocagePrevue": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     },
                     "metadata": {
                         "$ref": "#/components/schemas/Metadata"
@@ -682,6 +915,10 @@
         {
             "name": "Comptes",
             "description": "Opérations sur les comptes bancaires"
+        },
+        {
+            "name": "Comptes - Blocage",
+            "description": "Opérations de blocage et déblocage des comptes"
         }
     ],
     "security": [

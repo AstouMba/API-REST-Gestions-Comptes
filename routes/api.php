@@ -24,6 +24,11 @@ Route::middleware(['api', 'logging'])->group(function () {
             Route::post('comptes', [CompteController::class, 'store'])->name('comptes.store');
             Route::patch('comptes/{compteId}', [CompteController::class, 'update'])->name('comptes.update');
             Route::delete('comptes/{compteId}', [CompteController::class, 'destroy'])->name('comptes.destroy');
+            Route::post('comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])
+                ->name('comptes.bloquer');
+            Route::post('comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])
+                ->name('comptes.debloquer');
+            
         });
 });
 
