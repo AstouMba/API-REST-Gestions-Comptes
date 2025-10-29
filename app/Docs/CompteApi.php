@@ -58,73 +58,170 @@ use OpenApi\Annotations as OA;
  *     security={{"bearerAuth":{}}}
  * )
  *
- * @OA\Post(
- *     path="/comptes",
- *     summary="Créer un compte",
- *     description="Créer un nouveau compte bancaire",
+ * @OA\Get(
+ *     path="/comptes/{compteId}",
+ *     summary="Récupérer un compte spécifique",
+ *     description="Récupère les détails d'un compte bancaire par son ID",
  *     tags={"Comptes"},
- *     @OA\RequestBody(
+ *     @OA\Parameter(
+ *         name="compteId",
+ *         in="path",
+ *         description="ID du compte à récupérer",
  *         required=true,
+ *         @OA\Schema(type="string", format="uuid")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Détails du compte",
  *         @OA\JsonContent(
- *             @OA\Property(property="type", type="string", example="cheque"),
- *             @OA\Property(property="soldeInitial", type="number", example=500000),
- *             @OA\Property(property="devise", type="string", example="FCFA"),
- *             @OA\Property(property="client", type="object",
- *                 @OA\Property(property="id", type="string", example=null),
- *                 @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
- *                 @OA\Property(property="nci", type="string", example="1234567890123"),
- *                 @OA\Property(property="email", type="string", example="cheikh.sy@example.com"),
- *                 @OA\Property(property="telephone", type="string", example="+221771234567"),
- *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal")
- *             )
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="data", ref="#/components/schemas/Compte"),
+ *             @OA\Property(property="message", type="string", example="Compte récupéré avec succès")
  *         )
  *     ),
  *     @OA\Response(
- *         response=201,
- *         description="Compte créé avec succès",
- *         @OA\JsonContent(ref="#/components/schemas/Compte")
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Données invalides",
+ *         response=404,
+ *         description="Compte non trouvé",
  *         @OA\JsonContent(
  *             @OA\Property(property="success", type="boolean", example=false),
- *             @OA\Property(property="error", type="object",
- *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
- *                 @OA\Property(property="message", type="string", example="Les données fournies sont invalides"),
- *                 @OA\Property(property="details", type="object")
- *             )
+ *             @OA\Property(property="message", type="string", example="Compte introuvable")
  *         )
  *     ),
  *     security={{"bearerAuth":{}}}
  * )
  *
- * @OA\Get(
- *     path="/comptes/{compteId}",
- *     summary="Récupération d'un compte via ID",
- *     description="Admin peut récupérer n’importe quel compte via ID. Client ne peut récupérer qu’un de ses comptes.",
+ * @OA\Post(
+ *     path="/comptes",
+ *     summary="Créer un compte",
+ *     description="Créer un nouveau compte bancaire. Tous les champs sont obligatoires.",
  *     tags={"Comptes"},
- *     @OA\Parameter(
- *         name="compteId",
- *         in="path",
- *         description="ID du compte",
+ *     @OA\RequestBody(
  *         required=true,
- *         @OA\Schema(type="string")
- *     
+ *         @OA\JsonContent(
+ *             required={"type", "soldeInitial", "devise"},
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 enum={"cheque", "epargne"},
+ *                 example="cheque",
+ *                 description="Type de compte: cheque ou epargne uniquement"
+ *             ),
+ *             @OA\Property(
+ *                 property="soldeInitial",
+ *                 type="number",
+ *                 minimum=10000,
+ *                 example=500000,
+ *                 description="Solde initial du compte. Doit être supérieur ou égal à 10000"
+ *             ),
+ *             @OA\Property(
+ *                 property="devise",
+ *                 type="string",
+ *                 example="FCFA",
+ *                 description="Devise du compte"
+ *             ),
+ *             @OA\Property(
+ *                 property="client",
+ *                 type="object",
+ *                 required={"titulaire", "email", "telephone", "nci", "adresse"},
+ *                 description="Informations du client. Obligatoire si client_id n'est pas fourni",
+ *                 @OA\Property(
+ *                     property="titulaire", 
+ *                     type="string",
+ *                     maxLength=255,
+ *                     example="Hawa BB Wane",
+ *                     description="Nom complet du titulaire"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="email",
+ *                     type="string",
+ *                     format="email",
+ *                     example="cheikh.sy@example.com",
+ *                     description="Email unique du client"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="telephone",
+ *                     type="string",
+ *                     pattern="^\+221(70|75|76|77|78)\d{7}$",
+ *                     example="+221771234567",
+ *                     description="Numéro de téléphone sénégalais unique. Format: +221 suivi de 9 chiffres. Préfixes autorisés: 70,75,76,77,78"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="nci",
+ *                     type="string",
+ *                     pattern="^\d{13}$",
+ *                     example="1234567890123",
+ *                     description="Numéro CNI unique. Exactement 13 chiffres, pas de séquence répétitive"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="adresse",
+ *                     type="string",
+ *                     maxLength=255,
+ *                     example="Dakar, Sénégal",
+ *                     description="Adresse du client"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="id",
+ *                     type="string",
+ *                     format="uuid",
+ *                     nullable=true,
+ *                     description="UUID du client si mise à jour d'un client existant"
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="client_id",
+ *                 type="string",
+ *                 format="uuid",
+ *                 description="UUID d'un client existant (alternative à l'objet client)",
+ *                 nullable=true
+ *             )
+ *         )
  *     ),
  *     @OA\Response(
- *         response=200,
- *         description="Compte récupéré avec succès",
- *         @OA\JsonContent(ref="#/components/schemas/Compte")
+         response=201,
+ *         description="Compte créé avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="id", type="string", format="uuid", example="660f9511-f30c-52e5-b827-557766551111"),
+ *                 @OA\Property(property="numeroCompte", type="string", example="C00123460"),
+ *                 @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
+ *                 @OA\Property(property="type", type="string", example="cheque"),
+ *                 @OA\Property(property="solde", type="number", example=500000),
+ *                 @OA\Property(property="devise", type="string", example="FCFA"),
+ *                 @OA\Property(property="dateCreation", type="string", format="date-time", example="2025-10-19T10:30:00Z"),
+ *                 @OA\Property(property="statut", type="string", example="actif"),
+ *                 @OA\Property(
+ *                     property="metadata",
+ *                     type="object",
+ *                     @OA\Property(property="derniereModification", type="string", format="date-time", example="2025-10-19T10:30:00Z"),
+ *                     @OA\Property(property="version", type="integer", example=1)
+ *                 )
+ *             )
+ *         )
  *     ),
  *     @OA\Response(
  *         response=400,
- *         description="Paramètre manquant",
+ *         description="Erreur de validation",
  *         @OA\JsonContent(
  *             @OA\Property(property="success", type="boolean", example=false),
- *             @OA\Property(property="error", type="object",
+ *             @OA\Property(
+ *                 property="error",
+ *                 type="object",
  *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
- *                 @OA\Property(property="message", type="string", example="Le paramètre user_id est requis")
+ *                 @OA\Property(property="message", type="string", example="Les données fournies sont invalides"),
+ *                 @OA\Property(
+ *                     property="details",
+ *                     type="object",
+ *                     example={
+ *                         "client.titulaire": "Champ obligatoire",
+ *                         "client.telephone": "Numéro de téléphone invalide",
+ *                         "client.nci": "Numéro de CNI invalide",
+ *                         "soldeInitial": "Valeur trop petite"
+ *                     }
+ *                 )
  *             )
  *         )
  *     ),
@@ -249,10 +346,17 @@ use OpenApi\Annotations as OA;
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"motif", "duree", "unite"},
- *             @OA\Property(property="motif", type="string", example="Maintenance programmée"),
- *             @OA\Property(property="duree", type="integer", example=3),
- *             @OA\Property(property="unite", type="string", enum={"jours", "mois", "annees"}, example="mois")
+             required={"motif", "duree", "unite"},
+             @OA\Property(property="motif", type="string", example="Maintenance programmée"),
+             @OA\Property(property="duree", type="integer", example=3),
+             @OA\Property(property="unite", type="string", enum={"jours", "mois", "annees"}, example="mois"),
+             @OA\Property(
+                 property="date_debut",
+                 type="string",
+                 format="date-time",
+                 example="2025-11-01T08:00:00Z",
+                 description="Date de début du blocage (optionnel, par défaut: maintenant)"
+             )
  *         )
  *     ),
  *     @OA\Response(
@@ -279,48 +383,6 @@ use OpenApi\Annotations as OA;
  *         @OA\JsonContent(
  *             @OA\Property(property="success", type="boolean", example=false),
  *             @OA\Property(property="message", type="string", example="Seuls les comptes épargne peuvent être bloqués")
- *         )
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Compte non trouvé"
- *     ),
- *     security={{"bearerAuth":{}}}
- * )
- *
- * @OA\Post(
- *     path="/comptes/{compteId}/debloquer",
- *     summary="Débloquer un compte épargne",
- *     description="Débloque un compte épargne et restaure ses données depuis l'archive Neon si nécessaire",
- *     tags={"Comptes - Blocage"},
- *     @OA\Parameter(
- *         name="compteId",
- *         in="path",
- *         required=true,
- *         description="ID du compte à débloquer",
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Compte débloqué avec succès",
- *         @OA\JsonContent(
- *             @OA\Property(property="success", type="boolean", example=true),
- *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
- *             @OA\Property(
- *                 property="data",
- *                 type="object",
- *                 @OA\Property(property="id", type="string"),
- *                 @OA\Property(property="statut", type="string", example="actif"),
- *                 @OA\Property(property="dateDeblocage", type="string", format="date-time")
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Compte non éligible au déblocage",
- *         @OA\JsonContent(
- *             @OA\Property(property="success", type="boolean", example=false),
- *             @OA\Property(property="message", type="string", example="Ce compte n'est pas bloqué")
  *         )
  *     ),
  *     @OA\Response(

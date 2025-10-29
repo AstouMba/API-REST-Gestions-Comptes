@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BlocageCompteRequest;
-use App\Http\Requests\DeblocageCompteRequest;
 use App\Models\Compte;
 use App\Services\CompteBlockageService;
 use Carbon\Carbon;
@@ -55,30 +54,5 @@ class BlocageCompteController extends Controller
         }
     }
 
-    /**
-     * Débloquer un compte
-     */
-    public function debloquer(DeblocageCompteRequest $request, string $compteId): JsonResponse
-    {
-        $compte = Compte::findOrFail($compteId);
-
-        if (!$this->blockageService->peutEtreDebloque($compte)) {
-            return response()->json([
-                'success' => false,
-                'message' => "Ce compte n'est pas bloqué"
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        $this->blockageService->debloquerCompte($compte);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Compte débloqué avec succès',
-            'data' => [
-                'id' => $compte->id,
-                'statut' => $compte->statut,
-                'dateDeblocage' => Carbon::now(),
-            ]
-        ], Response::HTTP_OK);
-    }
+    // Méthode `debloquer` supprimée : le déblocage est effectué automatiquement par le job programmé.
 }

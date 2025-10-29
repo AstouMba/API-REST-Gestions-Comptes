@@ -15,11 +15,13 @@ class CompteResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            // Forcer l'ID en string pour éviter de retourner un objet UUID
+            'id' => (string) $this->id,
             'numeroCompte' => $this->numero,
             'titulaire' => $this->client->titulaire,
             'type' => $this->type,
-            'solde' => $this->depots->sum('montant') - $this->retraits->sum('montant'),
+            // Use the model accessor 'solde' (computed, not stored in DB)
+            'solde' => $this->solde,
             'devise' => $this->devise,
             'dateCreation' => $this->created_at->toISOString(),
             'statut' => $this->statut,

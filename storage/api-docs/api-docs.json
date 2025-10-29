@@ -129,54 +129,93 @@
                     "Comptes"
                 ],
                 "summary": "Créer un compte",
-                "description": "Créer un nouveau compte bancaire",
+                "description": "Créer un nouveau compte bancaire. Tous les champs sont obligatoires.",
                 "operationId": "8b0f6ac3018cf0a79d214a1c9744d9de",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "type",
+                                    "soldeInitial",
+                                    "devise"
+                                ],
                                 "properties": {
                                     "type": {
+                                        "description": "Type de compte: cheque ou epargne uniquement",
                                         "type": "string",
+                                        "enum": [
+                                            "cheque",
+                                            "epargne"
+                                        ],
                                         "example": "cheque"
                                     },
                                     "soldeInitial": {
+                                        "description": "Solde initial du compte. Doit être supérieur ou égal à 10000",
                                         "type": "number",
+                                        "minimum": 10000,
                                         "example": 500000
                                     },
                                     "devise": {
+                                        "description": "Devise du compte",
                                         "type": "string",
                                         "example": "FCFA"
                                     },
                                     "client": {
+                                        "description": "Informations du client. Obligatoire si client_id n'est pas fourni",
+                                        "required": [
+                                            "titulaire",
+                                            "email",
+                                            "telephone",
+                                            "nci",
+                                            "adresse"
+                                        ],
                                         "properties": {
-                                            "id": {
-                                                "type": "string",
-                                                "example": null
-                                            },
                                             "titulaire": {
+                                                "description": "Nom complet du titulaire",
                                                 "type": "string",
+                                                "maxLength": 255,
                                                 "example": "Hawa BB Wane"
                                             },
-                                            "nci": {
-                                                "type": "string",
-                                                "example": "1234567890123"
-                                            },
                                             "email": {
+                                                "description": "Email unique du client",
                                                 "type": "string",
+                                                "format": "email",
                                                 "example": "cheikh.sy@example.com"
                                             },
                                             "telephone": {
+                                                "description": "Numéro de téléphone sénégalais unique. Format: +221 suivi de 9 chiffres. Préfixes autorisés: 70,75,76,77,78",
                                                 "type": "string",
+                                                "pattern": "^\\+221(70|75|76|77|78)\\d{7}$",
                                                 "example": "+221771234567"
                                             },
-                                            "adresse": {
+                                            "nci": {
+                                                "description": "Numéro CNI unique. Exactement 13 chiffres, pas de séquence répétitive",
                                                 "type": "string",
+                                                "pattern": "^\\d{13}$",
+                                                "example": "1234567890123"
+                                            },
+                                            "adresse": {
+                                                "description": "Adresse du client",
+                                                "type": "string",
+                                                "maxLength": 255,
                                                 "example": "Dakar, Sénégal"
+                                            },
+                                            "id": {
+                                                "description": "UUID du client si mise à jour d'un client existant",
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "nullable": true
                                             }
                                         },
                                         "type": "object"
+                                    },
+                                    "client_id": {
+                                        "description": "UUID d'un client existant (alternative à l'objet client)",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -190,13 +229,76 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Compte"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte créé avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "660f9511-f30c-52e5-b827-557766551111"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "C00123460"
+                                                },
+                                                "titulaire": {
+                                                    "type": "string",
+                                                    "example": "Hawa BB Wane"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "cheque"
+                                                },
+                                                "solde": {
+                                                    "type": "number",
+                                                    "example": 500000
+                                                },
+                                                "devise": {
+                                                    "type": "string",
+                                                    "example": "FCFA"
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-10-19T10:30:00Z"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "actif"
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2025-10-19T10:30:00Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Données invalides",
+                        "description": "Erreur de validation",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -216,74 +318,13 @@
                                                     "example": "Les données fournies sont invalides"
                                                 },
                                                 "details": {
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/comptes/{compteId}": {
-            "get": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Récupération d'un compte via ID",
-                "description": "Admin peut récupérer n’importe quel compte via ID. Client ne peut récupérer qu’un de ses comptes.",
-                "operationId": "2dc97a14d98b84372fc48599476fa426",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Compte récupéré avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Compte"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Paramètre manquant",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "error": {
-                                            "properties": {
-                                                "code": {
-                                                    "type": "string",
-                                                    "example": "VALIDATION_ERROR"
-                                                },
-                                                "message": {
-                                                    "type": "string",
-                                                    "example": "Le paramètre user_id est requis"
+                                                    "type": "object",
+                                                    "example": {
+                                                        "client.titulaire": "Champ obligatoire",
+                                                        "client.telephone": "Numéro de téléphone invalide",
+                                                        "client.nci": "Numéro de CNI invalide",
+                                                        "soldeInitial": "Valeur trop petite"
+                                                    }
                                                 }
                                             },
                                             "type": "object"
@@ -338,12 +379,84 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/comptes/{compteId}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer un compte spécifique",
+                "description": "Récupère les détails d'un compte bancaire par son ID",
+                "operationId": "2dc97a14d98b84372fc48599476fa426",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "ID du compte à récupérer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du compte",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte récupéré avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte introuvable"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Supprimer un compte (Soft Delete + Archivage)",
+                "summary": "Supprimer un compte (Soft Delete) ",
                 "description": "Supprime (soft-delete) un compte localement et archive ses données dans la base Neon.",
                 "operationId": "74a564f9e62618ca110b2d05a4ec3f7b",
                 "parameters": [
@@ -603,6 +716,12 @@
                                             "annees"
                                         ],
                                         "example": "mois"
+                                    },
+                                    "date_debut": {
+                                        "description": "Date de début du blocage (optionnel, par défaut: maintenant)",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-11-01T08:00:00Z"
                                     }
                                 },
                                 "type": "object"
@@ -669,93 +788,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Seuls les comptes épargne peuvent être bloqués"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Compte non trouvé"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/comptes/{compteId}/debloquer": {
-            "post": {
-                "tags": [
-                    "Comptes - Blocage"
-                ],
-                "summary": "Débloquer un compte épargne",
-                "description": "Débloque un compte épargne et restaure ses données depuis l'archive Neon si nécessaire",
-                "operationId": "7fe243ca12d1b828ca724af39eb5860c",
-                "parameters": [
-                    {
-                        "name": "compteId",
-                        "in": "path",
-                        "description": "ID du compte à débloquer",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Compte débloqué avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte débloqué avec succès"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string"
-                                                },
-                                                "statut": {
-                                                    "type": "string",
-                                                    "example": "actif"
-                                                },
-                                                "dateDeblocage": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Compte non éligible au déblocage",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Ce compte n'est pas bloqué"
                                         }
                                     },
                                     "type": "object"
@@ -902,13 +934,6 @@
                 },
                 "type": "object"
             }
-        },
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            }
         }
     },
     "tags": [
@@ -919,11 +944,6 @@
         {
             "name": "Comptes - Blocage",
             "description": "Opérations de blocage et déblocage des comptes"
-        }
-    ],
-    "security": [
-        {
-            "bearerAuth": []
         }
     ]
 }

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\UpdateCompteRequest;
 use App\Http\Requests\BlocageCompteRequest;
-use App\Http\Requests\DeblocageCompteRequest;
+// Deblocage via API removed: unblocking is handled by the scheduled job
 use Carbon\Carbon;
 use App\Models\Compte;
 use Symfony\Component\HttpFoundation\Response;
@@ -108,16 +108,4 @@ class CompteController extends Controller
         }
     }
 
-    /**
-     * Débloquer un compte
-     */
-    public function debloquer(DeblocageCompteRequest $request, string $compteId): JsonResponse
-    {
-        try {
-            $result = $this->compteService->debloquerCompte($compteId);
-            return $this->successResponse($result, 'Compte débloqué avec succès', Response::HTTP_OK);
-        } catch (\InvalidArgumentException $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-    }
 }

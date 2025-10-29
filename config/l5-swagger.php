@@ -68,18 +68,8 @@ return [
         ],
 
         'securityDefinitions' => [
-            'securitySchemes' => [
-                'bearerAuth' => [
-                    'type' => 'http',
-                    'scheme' => 'bearer',
-                    'bearerFormat' => 'JWT',
-                ],
-            ],
-            'security' => [
-                [
-                    'bearerAuth' => [],
-                ],
-            ],
+            'securitySchemes' => [],
+            'security' => [],
         ],
 
         'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', true),
