@@ -15,8 +15,10 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(property="solde", type="number", example=1250000),
  *     @OA\Property(property="devise", type="string", example="FCFA"),
  *     @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
- *     @OA\Property(property="statut", type="string", example="bloque"),
- *     @OA\Property(property="motifBlocage", type="string", example="Inactivité de 30+ jours"),
+ *     @OA\Property(property="statut", type="string", enum={"actif", "bloque", "ferme"}, example="bloque"),
+ *     @OA\Property(property="motifBlocage", type="string", nullable=true, example="Maintenance programmée"),
+ *     @OA\Property(property="dateBlocage", type="string", format="date-time", nullable=true),
+ *     @OA\Property(property="dateDeblocagePrevue", type="string", format="date-time", nullable=true),
  *     @OA\Property(property="metadata", ref="#/components/schemas/Metadata")
  * )
  *

@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\CompteResource;
 use App\Services\CompteService;
+use App\Services\CompteBlockageService;
 use App\Traits\ApiResponseTrait;
 use App\Traits\PaginationTrait;
 use App\Enums\MessageEnumFr;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\UpdateCompteRequest;
+use App\Http\Requests\BlocageCompteRequest;
+use App\Http\Requests\DeblocageCompteRequest;
+use Carbon\Carbon;
+use App\Models\Compte;
+use Symfony\Component\HttpFoundation\Response;
 
 
 class CompteController extends Controller
@@ -17,10 +24,14 @@ class CompteController extends Controller
     use PaginationTrait;
 
     protected $compteService;
+    protected $blockageService;
 
-    public function __construct(CompteService $compteService)
-    {
+    public function __construct(
+        CompteService $compteService,
+        CompteBlockageService $blockageService
+    ) {
         $this->compteService = $compteService;
+        $this->blockageService = $blockageService;
     }
 
     public function index(Request $request)
@@ -81,6 +92,32 @@ class CompteController extends Controller
                 return $this->errorResponse(MessageEnumFr::COMPTE_NOT_FOUND, 404);
             }
             return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Planifier le blocage d'un compte épargne
+     */
+    public function bloquer(BlocageCompteRequest $request, string $compteId): JsonResponse
+    {
+        try {
+            $result = $this->compteService->planifierBlocage($compteId, $request->validated());
+            return $this->successResponse($result, 'Blocage du compte programmé', Response::HTTP_CREATED);
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Débloquer un compte
+     */
+    public function debloquer(DeblocageCompteRequest $request, string $compteId): JsonResponse
+    {
+        try {
+            $result = $this->compteService->debloquerCompte($compteId);
+            return $this->successResponse($result, 'Compte débloqué avec succès', Response::HTTP_OK);
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 }

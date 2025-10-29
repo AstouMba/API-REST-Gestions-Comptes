@@ -295,6 +295,119 @@ class CompteService
         }
     }
 
+    /**
+     * Planifier le blocage d'un compte
+     */
+    public function planifierBlocage(string $compteId, array $data): array
+    {
+        $compte = Compte::findOrFail($compteId);
+        
+        if ($compte->type !== 'epargne' || $compte->statut !== 'actif' || $compte->date_blocage !== null) {
+            throw new \InvalidArgumentException(
+                $compte->type !== 'epargne' 
+                ? 'Seuls les comptes épargne peuvent être bloqués'
+                : 'Ce compte ne peut pas être programmé pour blocage'
+            );
+        }
+
+        $dateBlocage = match($data['unite']) {
+            'jours' => Carbon::now()->addDays($data['duree']),
+            'mois' => Carbon::now()->addMonths($data['duree']),
+            'annees' => Carbon::now()->addYears($data['duree']),
+            default => throw new \InvalidArgumentException('Unité de temps invalide. Utilisez: jours, mois ou annees')
+        };
+
+        // Support both snake_case and camelCase DB column names (some deployments use motifBlocage/dateBlocage)
+        $updatePayload = [
+            // snake_case (preferred in codebase)
+            'motif_blocage' => $data['motif'],
+            'date_blocage' => $dateBlocage,
+            'date_deblocage_prevue' => $dateBlocage->copy()->addMonths(6),
+            // camelCase (some migrations used camelCase column names)
+            'motifBlocage' => $data['motif'],
+            'dateBlocage' => $dateBlocage,
+            'dateDeblocagePrevue' => $dateBlocage->copy()->addMonths(6),
+        ];
+
+        $compte->update($updatePayload);
+
+        return [
+            'id' => $compte->id,
+            'statut' => $compte->statut,
+            'motifBlocage' => $compte->motif_blocage,
+            'dateBlocagePrevue' => $compte->date_blocage,
+            'dateDeblocagePrevue' => $compte->date_deblocage_prevue,
+            'note' => 'Le compte sera bloqué à la date prévue et archivé dans Neon. Il sera automatiquement restauré et débloqué à la date de déblocage.'
+        ];
+    }
+
+    /**
+     * Débloquer un compte
+     */
+    public function debloquerCompte(string $compteId): array
+    {
+        $compte = Compte::findOrFail($compteId);
+
+        if ($compte->type !== 'epargne') {
+            throw new \InvalidArgumentException('Seuls les comptes épargne peuvent être débloqués');
+        }
+
+        if ($compte->statut !== 'bloque') {
+            throw new \InvalidArgumentException('Ce compte n\'est pas bloqué');
+        }
+
+        // Restaurer le compte si soft deleted
+        if ($compte->trashed()) {
+            $compte->restore();
+        }
+
+        // Clear both naming styles to ensure field reset regardless of column naming
+        $compte->update([
+            'statut' => 'actif',
+            'motif_blocage' => null,
+            'date_blocage' => null,
+            'date_deblocage_prevue' => null,
+            'motifBlocage' => null,
+            'dateBlocage' => null,
+            'dateDeblocagePrevue' => null,
+        ]);
+
+        // Restaurer les transactions depuis Neon si nécessaire
+        $transactions = DB::connection('neon')
+            ->table('transactions_archives')
+            ->where('compte_id', $compte->id)
+            ->get();
+
+        foreach ($transactions as $transaction) {
+            DB::table('transactions')->insert([
+                'id' => $transaction->transaction_id,
+                'compte_id' => $transaction->compte_id,
+                'type' => $transaction->type,
+                'montant' => $transaction->montant,
+                'date_transaction' => $transaction->date_transaction,
+                'created_at' => $transaction->created_at,
+                'updated_at' => $transaction->updated_at,
+            ]);
+        }
+
+        // Supprimer les archives de Neon
+        DB::connection('neon')
+            ->table('transactions_archives')
+            ->where('compte_id', $compte->id)
+            ->delete();
+            
+        DB::connection('neon')
+            ->table('comptes_archives')
+            ->where('compte_id', $compte->id)
+            ->delete();
+
+        return [
+            'id' => $compte->id,
+            'statut' => $compte->statut,
+            'dateDeblocage' => Carbon::now()
+        ];
+    }
+
     public function updateCompte(string $compteId, array $data, $user = null)
     {
         $compte = Compte::with('client.utilisateur')->find($compteId);
