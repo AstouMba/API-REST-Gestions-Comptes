@@ -155,7 +155,7 @@ class CompteService
                 'type' => $data['type'] ?? 'cheque',
                 'statut' => $data['statut'] ?? 'actif',
                 'devise' => $data['devise'] ?? 'FCFA',
-            ]);
+            ]); 
 
             // Create initial deposit transaction if soldeInitial is provided
             if (isset($data['soldeInitial']) && is_numeric($data['soldeInitial'])) {
