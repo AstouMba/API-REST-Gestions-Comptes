@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Client;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class ClientSeeder extends Seeder
 {
@@ -12,6 +13,11 @@ class ClientSeeder extends Seeder
      */
     public function run(): void
     {
-        Client::factory(10)->create();
+        Schema::disableForeignKeyConstraints();
+        Client::truncate();
+        Schema::enableForeignKeyConstraints();
+        
+        // Créer 15 clients avec des données réalistes sénégalaises
+        Client::factory(15)->create();
     }
 }

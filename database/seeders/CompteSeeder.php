@@ -17,6 +17,11 @@ class CompteSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         Compte::truncate();
         Schema::enableForeignKeyConstraints();
-        Compte::factory(20)->create();
+
+        // Créer 30 comptes au total :
+        // - 20 comptes courants (chèques)
+        // - 10 comptes épargne (dont ~20% seront bloqués par la factory)
+        Compte::factory(20)->create(['type' => 'cheque']);
+        Compte::factory(10)->create(['type' => 'epargne']);
     }
 }
