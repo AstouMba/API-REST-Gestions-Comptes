@@ -190,7 +190,7 @@ use OpenApi\Annotations as OA;
 
  * @OA\Delete(
  *     path="/comptes/{compteId}",
- *     summary="Supprimer un compte (Soft Delete + Archivage)",
+ *     summary="Supprimer un compte (Soft Delete) ",
  *     description="Supprime (soft-delete) un compte localement et archive ses données dans la base Neon.",
  *     tags={"Comptes"},
  *     @OA\Parameter(
