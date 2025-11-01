@@ -97,7 +97,7 @@ class AuthService
             'expires_in' => $data['expires_in'] ?? null,
             'token_type' => $data['token_type'] ?? null,
         ],
-        'cookies' => [$accessCookie,$refreshCookie],
+        'cookies' => [$accessCookie,$refreshCookie], 
     ];
 }
 
