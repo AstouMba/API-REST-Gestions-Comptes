@@ -20,8 +20,8 @@ class AuthApi
      *         required=true,
      *         @OA\JsonContent(
      *             required={"login", "password"},
-     *             @OA\Property(property="login", type="string", example="admin123"),
-     *             @OA\Property(property="password", type="string", example="password123")
+     *             @OA\Property(property="login", type="string", example="admin"),
+     *             @OA\Property(property="password", type="string", example="password")
      *         )
      *     ),
      *     @OA\Response(
