@@ -43,11 +43,11 @@
                                 "properties": {
                                     "login": {
                                         "type": "string",
-                                        "example": "admin123"
+                                        "example": "admin"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "password123"
+                                        "example": "password"
                                     }
                                 },
                                 "type": "object"
