@@ -14,13 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminUser = User::factory()->create([
-            'is_admin' => true,
-        ]);
-        Admin::create([
-            'id' => Str::uuid(),
-            'user_id' => $adminUser->id,
-        ]);
+        // Crée un admin fixe via le seeder dédié (login: admin / password: password)
+        $this->call([AdminUserSeeder::class]);
 
         User::factory(9)->create();
 

@@ -93,10 +93,11 @@ class AuthService
             ],
             'scopes' => explode(' ', $scope),
             'access_token' => $data['access_token'] ?? null,
+            'refresh_token' => $data['refresh_token'] ?? null,
             'expires_in' => $data['expires_in'] ?? null,
             'token_type' => $data['token_type'] ?? null,
         ],
-        'cookies' => [$refreshCookie],
+        'cookies' => [$accessCookie,$refreshCookie],
     ];
 }
 

@@ -29,7 +29,17 @@ class CompteFactory extends Factory
         // Date de création dans les 2 dernières années
         $dateCreation = fake()->dateTimeBetween('-2 years', 'now');
 
+        // Définir un solde par défaut non nul
+        if ($type === 'cheque') {
+            // Comptes chèques ont généralement des soldes plus modestes
+            $solde = fake()->randomFloat(2, 1000, 200000);
+        } else {
+            // Comptes épargne peuvent avoir des soldes plus élevés
+            $solde = fake()->randomFloat(2, 10000, 2000000);
+        }
+
         $data = [
+            'solde' => $solde,
               'id' =>Str::uuid(),
               'client_id' =>Client::factory(),
               'numero' => 'CPT' . str_pad(fake()->unique()->numberBetween(1, 999999), 6, '0', STR_PAD_LEFT),
