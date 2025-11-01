@@ -16,37 +16,62 @@ use Illuminate\Http\Request;
 
 class CompteService
 {
+    /**
+     * Liste les comptes selon le rôle de l'utilisateur
+     * - Admin : voit tous les comptes
+     * - Client : voit uniquement ses propres comptes
+     * 
+     * @param User|null $user
+     * @param array $filters
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    use \App\Traits\PaginationTrait;
+
     public function listComptes($user = null, $filters = [])
     {
         $query = Compte::query();
 
-        // Apply user scope (for admin / client) if available
+        // Permissions: filter by user if not admin
         if (method_exists(Compte::class, 'scopeForUser')) {
             $query = $query->forUser($user);
         }
 
-        // Apply search scope if provided
-        if (!empty($filters['search']) && method_exists(Compte::class, 'scopeSearch')) {
-            $query = $query->search($filters['search']);
-        }
-
-        // Apply type scope if provided
+        // Scopes for filters
         if (!empty($filters['type']) && method_exists(Compte::class, 'scopeType')) {
             $query = $query->type($filters['type']);
         }
+        if (!empty($filters['statut']) && method_exists(Compte::class, 'scopeStatut')) {
+            $query = $query->statut($filters['statut']);
+        }
+        if (!empty($filters['search']) && method_exists(Compte::class, 'scopeSearch')) {
+            $query = $query->search($filters['search']);
+        }
+        if (!empty($filters['client_id']) && $user && $user->is_admin) {
+            $query = $query->where('client_id', $filters['client_id']);
+        }
+        if (!empty($filters['devise'])) {
+            $query = $query->where('devise', $filters['devise']);
+        }
 
         // Sorting
-        $allowedSorts = ['created_at', 'numero', 'titulaire', 'solde'];
+        $allowedSorts = ['created_at', 'numero', 'titulaire', 'solde', 'type', 'statut'];
         $sort = $filters['sort'] ?? 'created_at';
         if (!in_array($sort, $allowedSorts)) {
             $sort = 'created_at';
         }
         $order = strtolower($filters['order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 
-        $query = $query->orderBy($sort, $order);
+        if ($sort === 'titulaire') {
+            $query = $query->join('clients', 'comptes.client_id', '=', 'clients.id')
+                ->select('comptes.*')
+                ->orderBy('clients.titulaire', $order);
+        } else {
+            $query = $query->orderBy($sort, $order);
+        }
 
-        // Pagination
         $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int) $filters['limit'] : 10;
+
+        $query = $query->with('client');
 
         return $query->paginate($limit);
     }
@@ -150,10 +175,31 @@ class CompteService
         });
     }
 
-    public function getCompteById(string $id): ?Compte
+    /**
+     * 
+     * @param string $id
+     * @param User|null $user
+     * @return Compte|null
+     */
+    public function getCompteById(string $id, User $user = null): ?Compte
     {
-        // Récupération directe du compte sans vérification d'autorisation pour le moment
-        return Compte::withoutGlobalScopes()->find($id);
+        $compte = Compte::with('client')->find($id);
+        
+        if (!$compte) {
+            return null;
+        }
+
+        // Si un utilisateur est fourni et qu'il n'est pas admin
+        if ($user && !$user->is_admin) {
+            $client = $user->client;
+            
+            // Vérifier que le compte appartient bien au client
+            if (!$client || $compte->client_id !== $client->id) {
+                return null; // Accès refusé
+            }
+        }
+
+        return $compte;
     }
 
     /**
@@ -161,19 +207,32 @@ class CompteService
      * Renvoie null si le compte n'existe ni localement (actif/trashed) ni dans les archives.
      *
      * @param string $compteId
+     * @param User|null $user Pour vérifier les permissions
      * @return array|null
      */
-    public function getComptePayload(string $compteId): ?array
+    public function getComptePayload(string $compteId, User $user = null): ?array
     {
         // Try active local account (global scopes apply)
         $localActive = Compte::with(['client', 'depots', 'retraits'])->find($compteId);
+        
         if ($localActive) {
+            if ($user && !$user->is_admin) {
+                $client = $user->client;
+                if (!$client || $localActive->client_id !== $client->id) {
+                    return null; // Accès refusé
+                }
+            }
+            
             // Use resource to build standard payload
             $payload = (new CompteResource($localActive))->toArray(request());
             return $payload;
         }
 
-        // Try neon archive
+        // Try neon archive (uniquement pour les admins)
+        if (!$user || !$user->is_admin) {
+            return null; // Les clients ne peuvent pas voir les archives
+        }
+
         try {
             $archive = CompteArchive::find($compteId);
         } catch (\Exception $e) {
@@ -233,6 +292,11 @@ class CompteService
             throw new \Exception('Compte non trouvé');
         }
 
+        // Seuls les comptes actifs peuvent être supprimés
+        if ($compte->statut !== 'actif') {
+            throw new \InvalidArgumentException('Seuls les comptes actifs peuvent être supprimés');
+        }
+
         $closureTime = Carbon::now();
 
         DB::beginTransaction();
@@ -246,7 +310,7 @@ class CompteService
 
             // Prepare archive data
             $user = $request ? $request->user() : null;
-            $archivedBy = $user->name ?? $user->id ?? null;
+            $archivedBy = $user->login ?? $user->id ?? null;
             if (! $archivedBy && $request) {
                 $archivedBy = $request->header('X-User-Name') ?? $request->header('X-User-Id') ?? 'system';
             }
@@ -317,13 +381,11 @@ class CompteService
             default => throw new \InvalidArgumentException('Unité de temps invalide. Utilisez: jours, mois ou annees')
         };
 
-        // Support both snake_case and camelCase DB column names (some deployments use motifBlocage/dateBlocage)
+        // Support both snake_case and camelCase DB column names
         $updatePayload = [
-            // snake_case (preferred in codebase)
             'motif_blocage' => $data['motif'],
             'date_blocage' => $dateBlocage,
             'date_deblocage_prevue' => $dateBlocage->copy()->addMonths(6),
-            // camelCase (some migrations used camelCase column names)
             'motifBlocage' => $data['motif'],
             'dateBlocage' => $dateBlocage,
             'dateDeblocagePrevue' => $dateBlocage->copy()->addMonths(6),
@@ -373,33 +435,37 @@ class CompteService
         ]);
 
         // Restaurer les transactions depuis Neon si nécessaire
-        $transactions = DB::connection('neon')
-            ->table('transactions_archives')
-            ->where('compte_id', $compte->id)
-            ->get();
+        try {
+            $transactions = DB::connection('neon')
+                ->table('transactions_archives')
+                ->where('compte_id', $compte->id)
+                ->get();
 
-        foreach ($transactions as $transaction) {
-            DB::table('transactions')->insert([
-                'id' => $transaction->transaction_id,
-                'compte_id' => $transaction->compte_id,
-                'type' => $transaction->type,
-                'montant' => $transaction->montant,
-                'date_transaction' => $transaction->date_transaction,
-                'created_at' => $transaction->created_at,
-                'updated_at' => $transaction->updated_at,
-            ]);
+            foreach ($transactions as $transaction) {
+                DB::table('transactions')->insert([
+                    'id' => $transaction->transaction_id,
+                    'compte_id' => $transaction->compte_id,
+                    'type' => $transaction->type,
+                    'montant' => $transaction->montant,
+                    'date_transaction' => $transaction->date_transaction,
+                    'created_at' => $transaction->created_at,
+                    'updated_at' => $transaction->updated_at,
+                ]);
+            }
+
+            // Supprimer les archives de Neon
+            DB::connection('neon')
+                ->table('transactions_archives')
+                ->where('compte_id', $compte->id)
+                ->delete();
+                
+            DB::connection('neon')
+                ->table('comptes_archives')
+                ->where('compte_id', $compte->id)
+                ->delete();
+        } catch (\Exception $e) {
+            Log::error('Error restoring transactions from Neon: ' . $e->getMessage());
         }
-
-        // Supprimer les archives de Neon
-        DB::connection('neon')
-            ->table('transactions_archives')
-            ->where('compte_id', $compte->id)
-            ->delete();
-            
-        DB::connection('neon')
-            ->table('comptes_archives')
-            ->where('compte_id', $compte->id)
-            ->delete();
 
         return [
             'id' => $compte->id,
@@ -415,7 +481,7 @@ class CompteService
             throw new \Exception("Compte non trouvé");
         }
 
-        \DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // Update titulaire if provided (stored on client)
             if (array_key_exists('titulaire', $data)) {
@@ -450,10 +516,10 @@ class CompteService
                 }
             }
 
-            \DB::commit();
+            DB::commit();
             return $compte->refresh();
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
     }

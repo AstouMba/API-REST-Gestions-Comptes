@@ -11,14 +11,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('users');
+        // Avoid dropping the users table because other tables may have FK constraints
+        if (! Schema::hasTable('users')) {
+            Schema::create('users', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->string('login')->unique();
+                $table->string('password');
+                $table->timestamps();
+            });
+        } else {
+            // If users table already exists, add missing columns safely without dropping the table
+            Schema::table('users', function (Blueprint $table) {
+                if (! Schema::hasColumn('users', 'login')) {
+                    $table->string('login')->unique()->after('id');
+                }
 
-        Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('login')->unique();
-            $table->string('password');
-            $table->timestamps();
-        });
+                if (! Schema::hasColumn('users', 'password')) {
+                    // Some projects already have password; add if missing
+                    $table->string('password')->after('login');
+                }
+            });
+        }
     }
 
     /**
@@ -26,16 +39,23 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        // On rollback, do not drop the users table (would cascade to dependent tables).
+        // Instead, attempt to remove the columns we added if they exist.
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                if (Schema::hasColumn('users', 'login')) {
+                    $table->dropColumn('login');
+                }
 
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
-        });
+                // Only drop password if it was added by this migration and not used elsewhere.
+                if (Schema::hasColumn('users', 'password')) {
+                    // Be conservative: do not drop 'password' if there is also a 'remember_token'
+                    // which indicates the original users table structure. Skip dropping in that case.
+                    if (! Schema::hasColumn('users', 'remember_token')) {
+                        $table->dropColumn('password');
+                    }
+                }
+            });
+        }
     }
 };

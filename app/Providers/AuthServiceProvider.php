@@ -2,27 +2,29 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use App\Models\Compte;
-use App\Policies\ComptePolicy;
+use Laravel\Passport\Passport;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
-    protected $policies = [
-        Compte::class => ComptePolicy::class,
-    ];
+    protected $policies = [];
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
-        //
+        // Activer le password grant (désactivé par défaut dans les versions récentes de Passport)
+        Passport::enablePasswordGrant();
+
+        // Définir les scopes basés sur is_admin
+        Passport::tokensCan([
+            'admin' => 'Accès administrateur complet',
+            'client' => 'Accès client standard',
+        ]);
+
+        // Scope par défaut pour les clients
+        Passport::setDefaultScope(['client']);
+
+        // Configuration optionnelle des durées de vie
+        Passport::tokensExpireIn(now()->addMinutes(60));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
     }
 }

@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('comptes', function (Blueprint $table) {
-            $table->string('motif_blocage')->nullable();
-            $table->timestamp('date_blocage')->nullable();
-            $table->timestamp('date_deblocage_prevue')->nullable();
+            if (!Schema::hasColumn('comptes', 'motif_blocage')) {
+                $table->string('motif_blocage')->nullable();
+            }
+            if (!Schema::hasColumn('comptes', 'date_blocage')) {
+                $table->timestamp('date_blocage')->nullable();
+            }
+            if (!Schema::hasColumn('comptes', 'date_deblocage_prevue')) {
+                $table->timestamp('date_deblocage_prevue')->nullable();
+            }
         });
     }
 
@@ -24,7 +30,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('comptes', function (Blueprint $table) {
-            $table->dropColumn(['motif_blocage', 'date_blocage', 'date_deblocage_prevue']);
+            $columns = ['motif_blocage', 'date_blocage', 'date_deblocage_prevue'];
+            foreach ($columns as $column) {
+                if (Schema::hasColumn('comptes', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
     }
 };

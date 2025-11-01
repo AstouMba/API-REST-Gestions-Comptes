@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('comptes', function (Blueprint $table) {
-            $table->decimal('solde', 15, 2)->after('statut')->default(0);
+            if (!Schema::hasColumn('comptes', 'solde')) {
+                $table->decimal('solde', 15, 2)->after('statut')->default(0);
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('comptes', function (Blueprint $table) {
-            $table->dropColumn('solde');
+            if (Schema::hasColumn('comptes', 'solde')) {
+                $table->dropColumn('solde');
+            }
         });
     }
 };

@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comptes', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('client_id');
-            $table->string('numero')->unique();
-            $table->timestamps();
+        if (! Schema::hasTable('comptes')) {
+            Schema::create('comptes', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->uuid('client_id');
+                $table->string('numero')->unique();
+                $table->timestamps();
 
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
-            $table->index('client_id');
-            $table->index('numero');
-        });
+                $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+                $table->index('client_id');
+                $table->index('numero');
+            });
+        }
     }
 
     /**
@@ -28,6 +30,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comptes');
+        if (Schema::hasTable('comptes')) {
+            Schema::dropIfExists('comptes');
+        }
     }
 };

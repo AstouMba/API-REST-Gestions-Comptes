@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transactions', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('compte_id');
-            $table->decimal('montant', 15, 2);
-            $table->enum('type', ['depot', 'retrait', 'virement']);
-            $table->string('description')->nullable();
-            $table->timestamps();
+        if (! Schema::hasTable('transactions')) {
+            Schema::create('transactions', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->uuid('compte_id');
+                $table->decimal('montant', 15, 2);
+                $table->enum('type', ['depot', 'retrait', 'virement']);
+                $table->string('description')->nullable();
+                $table->timestamps();
 
-            $table->foreign('compte_id')->references('id')->on('comptes')->onDelete('cascade');
-            $table->index('compte_id');
-            $table->index('type');
-        });
+                $table->foreign('compte_id')->references('id')->on('comptes')->onDelete('cascade');
+                $table->index('compte_id');
+                $table->index('type');
+            });
+        }
     }
 
     /**
@@ -30,6 +32,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transactions');
+        if (Schema::hasTable('transactions')) {
+            Schema::dropIfExists('transactions');
+        }
     }
 };

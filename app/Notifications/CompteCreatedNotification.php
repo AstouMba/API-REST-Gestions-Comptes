@@ -37,19 +37,33 @@ class CompteCreatedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $appName = config('app.name', 'LINGUERE BANK');
+
         $mail = (new MailMessage)
-                    ->subject('Informations de connexion à votre compte')
+                    ->subject($appName . ' - Informations de connexion à votre compte')
                     ->greeting('Bonjour ' . ($notifiable->titulaire ?? ''))
                     ->line('Votre compte a été créé avec succès.');
 
         if ($this->password) {
-            $mail->line('Voici vos informations de connexion :')
-                 ->line('Mot de passe : ' . $this->password)
-                 ->line('Veuillez utiliser ce mot de passe pour vous connecter.');
+            // Attempt to include the login (user) if available via the client relation
+            $login = null;
+            try {
+                $login = $notifiable->utilisateur->login ?? null;
+            } catch (\Throwable $e) {
+                // relation might not be loaded or user missing; ignore
+                $login = null;
+            }
+
+            $mail->line('Voici vos informations de connexion :');
+            if ($login) {
+                $mail->line('Login : ' . $login);
+            }
+            $mail->line('Mot de passe : ' . $this->password)
+                 ->line('Veuillez utiliser ces informations pour vous connecter.');
         }
 
         $mail->action('Se connecter', url('/login'))
-             ->line('Merci d\'utiliser notre service !');
+             ->line('Merci d\'utiliser ' . $appName . ' !');
 
         return $mail;
     }

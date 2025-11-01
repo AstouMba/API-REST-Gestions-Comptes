@@ -288,46 +288,6 @@ use OpenApi\Annotations as OA;
  *     security={{"bearerAuth":{}}}
  * )
  *
- * @OA\Post(
- *     path="/comptes/{compteId}/debloquer",
- *     summary="Débloquer un compte épargne",
- *     description="Débloque un compte épargne et restaure ses données depuis l'archive Neon si nécessaire",
- *     tags={"Comptes - Blocage"},
- *     @OA\Parameter(
- *         name="compteId",
- *         in="path",
- *         required=true,
- *         description="ID du compte à débloquer",
- *         @OA\Schema(type="string")
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Compte débloqué avec succès",
- *         @OA\JsonContent(
- *             @OA\Property(property="success", type="boolean", example=true),
- *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
- *             @OA\Property(
- *                 property="data",
- *                 type="object",
- *                 @OA\Property(property="id", type="string"),
- *                 @OA\Property(property="statut", type="string", example="actif"),
- *                 @OA\Property(property="dateDeblocage", type="string", format="date-time")
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Compte non éligible au déblocage",
- *         @OA\JsonContent(
- *             @OA\Property(property="success", type="boolean", example=false),
- *             @OA\Property(property="message", type="string", example="Ce compte n'est pas bloqué")
- *         )
- *     ),
- *     @OA\Response(
- *         response=404,
- *         description="Compte non trouvé"
- *     ),
- *     security={{"bearerAuth":{}}}
- * )
+ *
  */
 class CompteApi {}
