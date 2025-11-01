@@ -1,4 +1,4 @@
-# Étape 1: Build des dépendances PHP
+# Étape 1 : Build des dépendances PHP
 FROM composer:2.6 AS composer-build
 
 WORKDIR /app
@@ -9,11 +9,11 @@ COPY composer.json composer.lock ./
 # Installer les dépendances PHP sans scripts post-install
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-# Étape 2: Image finale pour l'application
+# Étape 2 : Image finale pour l'application
 FROM php:8.3-fpm-alpine
 
 # Installer les extensions PHP nécessaires
-RUN apk add --no-cache postgresql-dev \
+RUN apk add --no-cache postgresql-dev bash git unzip curl \
     && docker-php-ext-install pdo pdo_pgsql
 
 # Créer un utilisateur non-root
@@ -35,50 +35,28 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
     && chown -R laravel:laravel /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# # Créer un fichier .env minimal pour le build
-
-RUN echo "APP_NAME=\"LINGUERE BANK\"" > .env && \
-    echo "APP_ENV=production" >> .env && \
-    echo "APP_KEY=" >> .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=http://localhost" >> .env && \
-    echo "" >> .env && \
-    echo "LOG_CHANNEL=stack" >> .env && \
-    echo "LOG_LEVEL=error" >> .env && \
-    echo "" >> .env && \
-    echo "DB_CONNECTION=pgsql" >> .env && \
-    echo "DB_HOST=switchyard.proxy.rlwy.net" >> .env && \
-    echo "DB_PORT=22380" >> .env && \
-    echo "DB_DATABASE=railway" >> .env && \
-    echo "DB_USERNAME=postgres" >> .env && \
-    echo "DB_PASSWORD=EmLFoXLAGGnvTdvYWNWeWSMIwZwgzBJW" >> .env && \
-    echo "" >> .env && \
-    echo "CACHE_DRIVER=file" >> .env && \
-    echo "SESSION_DRIVER=file" >> .env && \
-    echo "QUEUE_CONNECTION=sync" >> .env && echo "" >> .env && \
-    echo "API_NAME=mbow.astou" >> .env
-
-
-# Changer les permissions du fichier .env pour l'utilisateur laravel
+# Copier le .env de production
+COPY .env.production .env
 RUN chown laravel:laravel .env
 
-# Générer la clé d'application et optimiser
-USER laravel
-RUN php artisan key:generate --force && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
-USER root
-
-# Copier le script d'entrée
+# Copier le script d'entrée et le rendre exécutable
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Passer à l'utilisateur non-root
 USER laravel
 
+# Optimisations Laravel
+RUN php artisan key:generate --force \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
 # Exposer le port 8000
 EXPOSE 8000
+
+# Définir l'entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Commande par défaut
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
