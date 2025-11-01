@@ -11,19 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clients', function (Blueprint $table) {
-             $table->uuid('id')->primary();
-             $table->uuid('utilisateur_id')->nullable();
-             $table->string('titulaire');
-             $table->string('email')->unique();
-             $table->string('adresse')->nullable();
-             $table->string('telephone')->nullable();
-             $table->timestamps();
+        // Create table only if it does not already exist (prevents duplicate table errors
+        // when migrations are re-run in a database that already has the table).
+        if (! Schema::hasTable('clients')) {
+            Schema::create('clients', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->uuid('utilisateur_id')->nullable();
+                $table->string('titulaire');
+                $table->string('email')->unique();
+                $table->string('adresse')->nullable();
+                $table->string('telephone')->nullable();
+                $table->timestamps();
 
-            $table->foreign('utilisateur_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index('email');
-            $table->index('utilisateur_id');
-        });
+                $table->foreign('utilisateur_id')->references('id')->on('users')->onDelete('cascade');
+                $table->index('email');
+                $table->index('utilisateur_id');
+            });
+        }
     }
 
     /**

@@ -80,7 +80,7 @@ return [
 
         // Neon serverless archive database connection
         'neon' => [
-            'driver' => 'pgsql',
+            'driver' => env('DB_NEON_DRIVER', 'pgsql'),
             'host' => env('DB_NEON_HOST'),
             'port' => env('DB_NEON_PORT', '5432'),
             'database' => env('DB_NEON_DATABASE'),

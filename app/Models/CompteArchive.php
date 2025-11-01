@@ -23,6 +23,9 @@ class CompteArchive extends Model
         'devise',
         'dateCreation',
         'dateFermeture',
+        'date_blocage',
+        'date_deblocage_prevue',
+        'motif_blocage',
         'metadata',
     ];
 
@@ -30,5 +33,7 @@ class CompteArchive extends Model
         'metadata' => 'array',
         'dateCreation' => 'datetime',
         'dateFermeture' => 'datetime',
+        'date_blocage' => 'datetime',
+        'date_deblocage_prevue' => 'datetime',
     ];
 }

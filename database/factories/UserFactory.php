@@ -24,9 +24,21 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-             'id' => Str::uuid(),
-             'login' => fake()->unique()->userName(),
-             'password' => static::$password ??= Hash::make('password'),
-         ];
+            'id' => Str::uuid(),
+            'login' => fake()->unique()->userName(),
+            'password' => static::$password ??= Hash::make('password'),
+            'code' => null,
+            'is_admin' => false
+        ];
+    }
+
+    /**
+     * Indique que l'utilisateur est un admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_admin' => true,
+        ]);
     }
 }

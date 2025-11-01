@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Compte;
+use App\Models\CompteArchive;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CompteBlockageService
 {
@@ -67,32 +69,48 @@ class CompteBlockageService
      */
     private function archiverCompte(Compte $compte): void
     {
-        DB::connection('neon')->table('comptes_archives')->insert([
-            'compte_id' => $compte->id,
-            'numero_compte' => $compte->numero,
-            'type' => $compte->type,
-            'statut' => $compte->statut,
-            'solde' => $compte->solde,
-            'devise' => $compte->devise,
-            'motif_blocage' => $compte->motif_blocage,
-            'date_blocage' => $compte->date_blocage,
-            'date_deblocage_prevue' => $compte->date_deblocage_prevue,
-            'date_archivage' => Carbon::now(),
-            'created_at' => $compte->created_at,
-            'updated_at' => Carbon::now(),
-        ]);
-
-        // Archiver aussi les transactions associées
-        $compte->transactions->each(function ($transaction) {
-            DB::connection('neon')->table('transactions_archives')->insert([
-                'transaction_id' => $transaction->id,
-                'compte_id' => $transaction->compte_id,
-                'type' => $transaction->type,
-                'montant' => $transaction->montant,
-                'date_transaction' => $transaction->date_transaction,
-                'created_at' => $transaction->created_at,
-                'updated_at' => $transaction->updated_at,
+        // Use the Eloquent model bound to the 'neon' connection to ensure consistent inserts
+        try {
+            CompteArchive::create([
+                'id' => $compte->id,
+                'numero' => $compte->numero,
+                'titulaire' => optional($compte->client)->titulaire ?? null,
+                'type' => $compte->type,
+                'solde' => $compte->solde,
+                'devise' => $compte->devise,
+                'statut' => $compte->statut,
+                // blocage fields
+                'motif_blocage' => $compte->motif_blocage,
+                'date_blocage' => $compte->date_blocage,
+                'date_deblocage_prevue' => $compte->date_deblocage_prevue,
+                // dates de creation/fermeture utilisées par la migration/model
+                'dateCreation' => $compte->created_at,
+                'dateFermeture' => null,
+                'metadata' => [
+                    'archivedBy' => 'system',
+                    'archivedAt' => Carbon::now()->toIso8601String(),
+                ],
             ]);
+        } catch (\Exception $e) {
+            // If neon is unavailable or insert fails, log the error but continue
+            Log::error('Failed to archive compte to neon via CompteArchive model: ' . $e->getMessage(), ['compte' => $compte->id]);
+        }
+
+        // Archiver aussi les transactions associées (table transaction_archives attendues)
+        $compte->transactions->each(function ($transaction) {
+            try {
+                DB::connection('neon')->table('transactions_archives')->insert([
+                    'transaction_id' => $transaction->id,
+                    'compte_id' => $transaction->compte_id,
+                    'type' => $transaction->type,
+                    'montant' => $transaction->montant,
+                    'date_transaction' => $transaction->date_transaction,
+                    'created_at' => $transaction->created_at,
+                    'updated_at' => $transaction->updated_at,
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to archive transaction to neon: ' . $e->getMessage(), ['transaction' => $transaction->id]);
+            }
         });
     }
 
@@ -101,6 +119,22 @@ class CompteBlockageService
      */
     public function debloquerComptesEchus(): void
     {
+        // Check if neon connection is configured
+        $neonConfigured = config('database.connections.neon') !== null;
+        if (!$neonConfigured) {
+            // If neon is not configured, just update comptes directly based on date_deblocage_prevue
+            Compte::where('statut', 'bloque')
+                ->whereNotNull('date_deblocage_prevue')
+                ->where('date_deblocage_prevue', '<=', Carbon::now())
+                ->update([
+                    'statut' => 'actif',
+                    'motif_blocage' => null,
+                    'date_blocage' => null,
+                    'date_deblocage_prevue' => null
+                ]);
+            return;
+        }
+
         // Rechercher dans la base Neon les comptes à débloquer
         $comptesADebloquer = DB::connection('neon')
             ->table('comptes_archives')
@@ -144,7 +178,7 @@ class CompteBlockageService
                 ->table('transactions_archives')
                 ->where('compte_id', $compteArchive->compte_id)
                 ->delete();
-            
+
             DB::connection('neon')
                 ->table('comptes_archives')
                 ->where('compte_id', $compteArchive->compte_id)

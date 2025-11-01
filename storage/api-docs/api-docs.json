@@ -2,23 +2,228 @@
     "openapi": "3.0.0",
     "info": {
         "title": "API Gestion Comptes",
-        "description": "API for managing bank accounts",
-        "version": "1.0.0"
+        "description": "API de gestion des comptes bancaires avec authentification JWT et contrôle d'accès basé sur les rôles (Admin/Client)",
+        "contact": {
+            "name": "Support API",
+            "email": "support@api-comptes.com"
+        },
+        "version": "1.2.1"
     },
     "servers": [
         {
             "url": "http://127.0.0.1:8000/api/v1/mbow.astou",
-            "description": "Local server"
+            "description": "Serveur local"
         },
         {
             "url": "https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
-            "description": "Production server"
+            "description": "Serveur de production"
         },
         {
             "url": ""
         }
     ],
     "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authentification d'un utilisateur",
+                "description": "Permet à un utilisateur de se connecter et d'obtenir un token d'accès",
+                "operationId": "c2806ac233ca0a0004ab45c32ad54d71",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string",
+                                        "example": "admin123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentification réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ces identifiants sont incorrects."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Les données fournies sont invalides."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Rafraîchissement du token",
+                "description": "Permet de rafraîchir le token d'accès",
+                "operationId": "aa8a86002330529c3698428814d68892",
+                "responses": {
+                    "200": {
+                        "description": "Token rafraîchi avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token invalide ou expiré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Non autorisé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Déconnexion",
+                "description": "Permet à un utilisateur de se déconnecter en révoquant son token",
+                "operationId": "36e0c85c6745e8a18fb8d11a8dc32da6",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Déconnexion réussie"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token invalide ou expiré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Non autorisé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/comptes": {
             "get": {
                 "tags": [
@@ -809,6 +1014,39 @@
     },
     "components": {
         "schemas": {
+            "Error": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Message d'erreur"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": {
+                            "field": [
+                                "Le champ est invalide"
+                            ]
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ApiResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Opération réussie"
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "Compte": {
                 "properties": {
                     "id": {
@@ -938,12 +1176,16 @@
     },
     "tags": [
         {
+            "name": "Authentication",
+            "description": "Endpoints d'authentification (login, refresh, logout)"
+        },
+        {
             "name": "Comptes",
-            "description": "Opérations sur les comptes bancaires"
+            "description": "Opérations sur les comptes bancaires (Admin: tous les comptes, Client: ses propres comptes)"
         },
         {
             "name": "Comptes - Blocage",
-            "description": "Opérations de blocage et déblocage des comptes"
+            "description": "Opérations de blocage des comptes (Admin uniquement)"
         }
     ]
 }

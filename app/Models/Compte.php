@@ -29,27 +29,11 @@ class Compte extends Model
         'deleted_at' => 'datetime',
     ];
 
-    /**
-     * Appended computed attributes when the model is serialized.
-     * We expose `solde` as a computed attribute (not stored in DB).
-     */
-    protected $appends = ['solde'];
-
-
     public function scopeActifs($query)
     {
         return $query->whereNull('deleted_at')
                     ->whereIn('type', ['cheque', 'epargne'])
-                    ->where(function($q) {
-                        $q->where('statut', 'actif')
-                          ->orWhere(function($q) {
-                              $q->where('statut', '!=', 'ferme')
-                                ->where(function($q) {
-                                    $q->whereNull('date_blocage')
-                                      ->orWhere('date_blocage', '>', now());
-                                });
-                          });
-                    });
+                    ->where('statut', 'actif');
     }
 
     public function client()
@@ -124,30 +108,6 @@ class Compte extends Model
         } else {
             return $query; // No user, return all
         }
-    }
-
-    /**
-     * Retourne le solde calculé du compte (dépôts - retraits).
-     * Ce champ n'est pas stocké en base ; il est calculé à la volée.
-     *
-     * La méthode utilise les relations si elles sont préchargées pour éviter
-     * des requêtes supplémentaires, sinon elle effectue des agrégations SQL.
-     *
-     * @return float
-     */
-    public function getSoldeAttribute(): float
-    {
-        // Si les relations sont déjà chargées, calculer en mémoire
-        if ($this->relationLoaded('depots') && $this->relationLoaded('retraits')) {
-            $depots = $this->depots->sum('montant');
-            $retraits = $this->retraits->sum('montant');
-        } else {
-            // Sinon, exécuter des agrégations optimisées en base
-            $depots = (float) $this->depots()->sum('montant');
-            $retraits = (float) $this->retraits()->sum('montant');
-        }
-
-        return (float) ($depots - $retraits);
     }
 
     /**

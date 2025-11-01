@@ -30,5 +30,5 @@ class TransactionSeeder extends Seeder
                 'montant' => fake()->numberBetween(10000, 500000)
             ]);
         });
-    } 
+    }
 }

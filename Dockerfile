@@ -37,7 +37,7 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
 
 # # Créer un fichier .env minimal pour le build
 
-RUN echo "APP_NAME=Laravel" > .env && \
+RUN echo "APP_NAME=\"LINGUERE BANK\"" > .env && \
     echo "APP_ENV=production" >> .env && \
     echo "APP_KEY=" >> .env && \
     echo "APP_DEBUG=false" >> .env && \

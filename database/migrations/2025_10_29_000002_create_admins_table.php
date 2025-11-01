@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admins', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('user_id');
-            $table->timestamps();
+        if (! Schema::hasTable('admins')) {
+            Schema::create('admins', function (Blueprint $table) {
+                $table->uuid('id')->primary();
+                $table->uuid('user_id');
+                $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index('user_id');
-        });
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                $table->index('user_id');
+            });
+        }
     }
 
     /**
@@ -26,6 +28,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins');
+        if (Schema::hasTable('admins')) {
+            Schema::dropIfExists('admins');
+        }
     }
 };

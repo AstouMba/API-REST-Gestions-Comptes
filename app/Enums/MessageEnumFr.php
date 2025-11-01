@@ -31,4 +31,14 @@ class MessageEnumFr
     const COMPTE_NOT_FOUND = 'Compte introuvable';
     const COMPTE_UPDATED = 'Compte mis à jour avec succès'; 
     const COMPTE_DELETED_ARCHIVED = 'Compte supprimé et archivé avec succès';
+
+    const ACCESS_DENIED = 'Accès refusé à ce compte';
+    const CLIENT_NOT_FOUND_USER = 'Client non trouvé pour cet utilisateur';
+    const CLIENT_NOT_FOUND = 'Client non trouvé';
+    const VOS_COMPTES_RETRIEVED = 'Vos comptes récupérés avec succès';
+    const BLOQUAGE_PROGRAMME = 'Blocage du compte programmé avec succès';
+    const COMPTE_DEBLOQUE = 'Compte débloqué avec succès';
+    const STATISTIQUES_RETRIEVED = 'Statistiques récupérées avec succès';
+    const HISTORIQUE_RETRIEVED = 'Historique récupéré avec succès';
+    const DEBLOCAGE_PLANIFIE = 'Déblocage planifié via job';
 }
