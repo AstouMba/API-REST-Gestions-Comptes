@@ -50,4 +50,4 @@ else
 fi
 
 echo "Setup complete! Starting Laravel..."
-exec "$@"
+exec "$@" 
