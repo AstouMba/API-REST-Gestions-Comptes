@@ -66,7 +66,7 @@ RUN echo "APP_NAME=\"LINGUERE BANK\"" > .env && \
 # Changer les permissions du fichier .env pour l'utilisateur laravel
 RUN chown laravel:laravel .env
 
-# Générer la clé d'application et optimiser
+# Générer la clé d'application et optimiser 
 USER laravel
 RUN php artisan key:generate --force && \
     php artisan config:cache && \ 
