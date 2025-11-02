@@ -14,7 +14,10 @@ class AuthService
     public function attemptLogin(string $login, string $password, string $scope = ''): array
     {
         // Récupérer le client password OAuth
-        $client = DB::table('oauth_clients')->where('password_client', true)->first();
+        $client = (object)[
+            'id' => env('PASSPORT_PASSWORD_CLIENT_ID'),
+            'secret' => env('PASSPORT_PASSWORD_CLIENT_SECRET')
+        ];
 
         if (!$client) {
             return [
