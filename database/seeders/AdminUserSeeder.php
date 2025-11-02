@@ -31,12 +31,13 @@ class AdminUserSeeder extends Seeder
             return;
         }
 
-        $user = User::create([
+            $user = User::create([
             'id' => Str::uuid(),
             'login' => 'admin',
-            'password' => bcrypt('password'),
+            'password' => 'password',
             'is_admin' => true
         ]);
+
 
         Admin::create([
             'id' => Str::uuid(),
