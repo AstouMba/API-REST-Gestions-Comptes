@@ -15,18 +15,9 @@ CLIENT_EXISTS=$(php artisan tinker --execute='echo \Laravel\Passport\Client::whe
 if [ "$CLIENT_EXISTS" -eq 0 ]; then
   echo "Creating Passport clients..."
   php artisan passport:install --force
+else
+  echo "Passport clients already exist, skipping creation..."
 fi
-
-# Récupérer le client password **après création**
-PASSPORT_PASSWORD_CLIENT_ID=$(php artisan tinker --execute='echo \Laravel\Passport\Client::where("password_client", true)->first()->id;')
-PASSPORT_PASSWORD_CLIENT_SECRET=$(php artisan tinker --execute='echo \Laravel\Passport\Client::where("password_client", true)->first()->secret;')
-
-# Exporter pour Laravel et Docker
-export PASSPORT_PASSWORD_CLIENT_ID
-export PASSPORT_PASSWORD_CLIENT_SECRET
-
-echo "PASSPORT_PASSWORD_CLIENT_ID=$PASSPORT_PASSWORD_CLIENT_ID"
-echo "PASSPORT_PASSWORD_CLIENT_SECRET=$PASSPORT_PASSWORD_CLIENT_SECRET"
 
 echo "Starting Laravel..."
 exec "$@"
