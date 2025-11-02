@@ -74,7 +74,6 @@ class CompteController extends Controller
     {
         $user = $request->user();
         
-        // Utiliser la méthode du service qui gère les permissions
         $payload = $this->compteService->getComptePayload($compteId, $user);
 
         if ($payload === null) {
