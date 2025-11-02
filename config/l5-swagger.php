@@ -94,7 +94,7 @@ return [
         ],
 
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => 'https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou',
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou'),
         ],
     ],
 
