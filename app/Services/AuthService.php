@@ -11,7 +11,18 @@ class AuthService
 {
     public function attemptLogin(string $login, string $password, string $scope = ''): array
     {
-        $client = DB::table('oauth_clients')->where('password_client', true)->first();
+        // Try to get client from env first, fallback to database
+        $clientId = env('PASSPORT_PASSWORD_CLIENT_ID');
+        $clientSecret = env('PASSPORT_PASSWORD_CLIENT_SECRET');
+
+        if ($clientId && $clientSecret) {
+            $client = (object) [
+                'id' => $clientId,
+                'secret' => $clientSecret
+            ];
+        } else {
+            $client = DB::table('oauth_clients')->where('password_client', true)->first();
+        }
 
         if (!$client) {
             return ['status' => 500, 'body' => ['message' => 'Password grant client not configured'], 'cookies' => []];

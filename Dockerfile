@@ -59,8 +59,8 @@ RUN echo "APP_NAME=\"LINGUERE BANK\"" > .env && \
     echo "" >> .env && \
     echo "API_NAME=mbow.astou" >> .env && \
     echo "" >> .env && \
-    echo "PASSPORT_PASSWORD_CLIENT_ID=3" >> .env && \
-    echo "PASSPORT_PASSWORD_CLIENT_SECRET=w5BPfEnxq9fqr2UORF2iFLs5jkgxciuGDC2riVqK" >> .env
+    echo "PASSPORT_PASSWORD_CLIENT_ID=8" >> .env && \
+    echo "PASSPORT_PASSWORD_CLIENT_SECRET=Eh68vlmcabQIWwec2rO7Wylr20vtlbBcosomwneM" >> .env
 
 
 # Changer les permissions du fichier .env pour l'utilisateur laravel
