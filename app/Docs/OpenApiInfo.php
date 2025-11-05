@@ -14,14 +14,14 @@ use OpenApi\Annotations as OA;
  *         name="Support API"
  *     )
  * )
- *
- * @OA\Server(
- *     url="http://127.0.0.1:8000/api/v1/mbow.astou",
- *     description="Serveur local"
- * )
  * @OA\Server(
  *     url="https://api-rest-gestions-comptes.onrender.com/api/v1/mbow.astou",
  *     description="Serveur de production"
+ * )
+ *
+ * @OA\Server(
+ *     url="http://127.0.0.1:8001/api/v1/mbow.astou",
+ *     description="Serveur local"
  * )
  * 
  * @OA\SecurityScheme(

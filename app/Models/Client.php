@@ -28,7 +28,7 @@ class Client extends Model
         return $this->belongsTo(User::class, 'utilisateur_id');
     }
 
-    public function comptes()
+     public function comptes()
     {
         return $this->hasMany(Compte::class);
     }

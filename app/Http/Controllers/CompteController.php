@@ -55,7 +55,7 @@ class CompteController extends Controller
         return $this->successResponse(
             CompteResource::collection($comptes),
             MessageEnumFr::COMPTES_RETRIEVED,
-            200,
+            Response::HTTP_OK,
             $formatted['pagination'],
             $formatted['links']
         );
@@ -222,28 +222,6 @@ class CompteController extends Controller
         }
     }
 
-    /**
-     * Débloquer un compte (ADMIN uniquement - protégé par middleware)
-     * 
-     * @param DeblocageCompteRequest $request
-     * @param string $compteId
-     * @return JsonResponse
-     */
-    public function debloquer(DeblocageCompteRequest $request, string $compteId): JsonResponse
-    {
-        try {
-            // Déclencher le job qui s'occupe du déblocage (le job gère la logique et la restauration depuis Neon)
-            UnarchiveAccountsJob::dispatch();
-
-            return $this->successResponse(
-                null,
-                MessageEnumFr::DEBLOCAGE_PLANIFIE,
-                Response::HTTP_ACCEPTED
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
 
     /**
      * - Admin : statistiques globales
@@ -288,7 +266,6 @@ class CompteController extends Controller
     }
 
     /**
-     * ⚠️ NOUVELLE MÉTHODE : Historique d'un compte
      * - Admin : peut voir l'historique de n'importe quel compte
      * - Client : peut voir l'historique de ses propres comptes uniquement
      * 
