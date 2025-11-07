@@ -18,6 +18,9 @@ class CreateCompteTest extends TestCase
     {
         Notification::fake();
 
+        // Create admin user for authentication
+        $admin = User::factory()->admin()->create();
+
         // Create a client without utilisateur
         $client = Client::factory()->create(['utilisateur_id' => null]);
 
@@ -26,7 +29,7 @@ class CreateCompteTest extends TestCase
             'type' => 'cheque',
         ];
 
-        $response = $this->postJson('/api/v1/mbow.astou/comptes', $payload);
+        $response = $this->actingAs($admin, 'api')->postJson('/api/v1/mbow.astou/comptes', $payload);
 
         $response->assertStatus(202);
 
@@ -48,6 +51,9 @@ class CreateCompteTest extends TestCase
     {
         Notification::fake();
 
+        // Create admin user for authentication
+        $admin = User::factory()->admin()->create();
+
         $payload = [
             'titulaire' => 'Test User',
             'telephone' => '+221771234567',
@@ -55,7 +61,7 @@ class CreateCompteTest extends TestCase
             'type' => 'epargne',
         ];
 
-        $response = $this->postJson('/api/v1/mbow.astou/comptes', $payload);
+        $response = $this->actingAs($admin, 'api')->postJson('/api/v1/mbow.astou/comptes', $payload);
 
         $response->assertStatus(202);
 
